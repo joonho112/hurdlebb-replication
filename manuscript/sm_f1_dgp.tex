@@ -1,0 +1,129 @@
+%% =============================================================================
+%% sm_f1_dgp.tex — SM-F, Subsection F.1: Data-Generating Process
+%% Body content only (\subsection level); parent structure in sm_f.tex
+%% =============================================================================
+
+\subsection{Data-generating process and calibration}
+\label{smf:dgp}
+
+This section provides the complete data-generating process (DGP)
+for the simulation study in~\cref{sec:simulation}.
+The DGP is designed to match the NSECE 2019 data structure while
+allowing parametric control over survey informativeness.
+
+\paragraph{Population generation.}
+A finite super-population of $M = 50{,}000$ providers is distributed
+across $S = 51$ states, with state sizes proportional to the
+observed NSECE state counts.  For each provider~$i$ in state~$s$:
+\begin{enumerate}
+  \item Draw the covariate vector
+    $\bx_i = (1,\, x_{\mathrm{pov}},\, x_{\mathrm{urb}},\,
+    x_{\mathrm{blk}},\, x_{\mathrm{his}})^\t$ by bootstrap
+    resampling from the empirical NSECE marginals within state~$s$.
+  \item Draw the trial size $n_i$ from the empirical distribution
+    of total 0--5 enrollment in the NSECE data.
+\end{enumerate}
+
+\paragraph{True parameter values.}
+The true parameters are calibrated to the M1 (random intercept)
+unweighted NSECE fit (\cref{sme:model-hierarchy}).
+\Cref{smf:tab-truth} reports all parameter values used in the
+DGP.  These values were chosen to produce a realistic structural
+zero rate (approximately 36\%) and overdispersion level
+consistent with the empirical data.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{@{}l r l@{}}
+    \toprule
+    Parameter & Value & Description \\
+    \midrule
+    $\alpha_{\text{int}}$     & $+0.696$ & Extensive intercept \\
+    $\alpha_{\text{pov}}$     & $-0.119$ & Extensive poverty \\
+    $\alpha_{\text{urb}}$     & $+0.253$ & Extensive urban \\
+    $\alpha_{\text{blk}}$     & $-0.070$ & Extensive Black \\
+    $\alpha_{\text{his}}$     & $-0.139$ & Extensive Hispanic \\
+    \addlinespace
+    $\beta_{\text{int}}$      & $-0.032$ & Intensive intercept \\
+    $\beta_{\text{pov}}$      & $+0.057$ & Intensive poverty \\
+    $\beta_{\text{urb}}$      & $-0.018$ & Intensive urban \\
+    $\beta_{\text{blk}}$      & $+0.080$ & Intensive Black \\
+    $\beta_{\text{his}}$      & $+0.040$ & Intensive Hispanic \\
+    \addlinespace
+    $\log\kappa_0$            & $+1.655$ & Log concentration \\
+    $\kappa_0$                & $5.232$ & Concentration \\
+    \addlinespace
+    $\tau_{\text{ext}}$       & $0.577$ & State SD (extensive) \\
+    $\tau_{\text{int}}$       & $0.208$ & State SD (intensive) \\
+    $\rho_{\text{cross}}$     & $0.285$ & Cross-margin correlation \\
+    \bottomrule
+  \end{tabular}
+  \caption{True parameter values for the simulation DGP, calibrated to
+    the M1 unweighted fit.  Fixed effects are on the logit scale;
+    $\kappa_0 = \exp(\log\kappa_0)$.}
+  \label{smf:tab-truth}
+\end{table}
+
+\paragraph{Outcome generation.}
+For each replication~$r = 1,\ldots,R$:
+\begin{enumerate}
+  \item Draw state random effects
+    $\bdelta_s = (\delta_{1s},\, \delta_{2s})^\t \sim
+    \Norm_2(\mathbf{0}, \bSigma_\delta)$, where
+    \[
+      \bSigma_\delta = \diag(\boldsymbol{\tau})\,
+      \mathbf{R}_\delta\,\diag(\boldsymbol{\tau}),
+      \quad
+      \boldsymbol{\tau} = (\tau_{\text{ext}},\,\tau_{\text{int}})^\t,
+      \quad
+      [\mathbf{R}_\delta]_{12} = \rho_{\text{cross}}.
+    \]
+  \item Compute linear predictors:
+    $\eta_i^{\text{ext}} = \bx_i^\t\balpha_0 + \delta_{1,s[i]}$,
+    $\eta_i^{\text{int}} = \bx_i^\t\bbeta_0 + \delta_{2,s[i]}$.
+  \item Generate participation:
+    $z_i \sim \Bern(q_i)$ with
+    $q_i = \expit(\eta_i^{\text{ext}})$.
+  \item For providers with $z_i = 1$, generate positive counts via
+    \textbf{rejection sampling} from the unconditional beta-binomial
+    \citep{Prentice1986}:
+    \begin{quote}
+      Draw $Y_i \sim \BetaBin(n_i,\, \mu_i,\, \kappa_0)$ where
+      $\mu_i = \expit(\eta_i^{\text{int}})$;
+      \emph{repeat until $Y_i > 0$}; set $y_i = Y_i$.
+    \end{quote}
+    This ensures $y_i > 0$ for all providers with $z_i = 1$,
+    consistent with the zero-truncated beta-binomial component of
+    the hurdle model.  The acceptance probability is $1 - p_0(n_i,
+    \mu_i, \kappa_0)$, which exceeds~$0.80$ for the vast majority
+    of observations in our calibration.
+  \item For providers with $z_i = 0$, set $y_i = 0$.
+\end{enumerate}
+
+\begin{remark}[T3-3: Zero-truncated beta-binomial DGP]
+  \label{smf:rem-ztbb}
+  Drawing from the unconditional $\BetaBin$ and rejecting zeros
+  produces exact draws from the zero-truncated beta-binomial
+  $\ZTBB(n, \mu, \kappa)$.  The alternative---dividing the
+  unconditional PMF by $(1-p_0)$---would require a custom
+  sampling routine, whereas rejection sampling reuses the
+  standard $\BetaBin$ sampler and is efficient whenever $p_0$ is
+  not too close to~$1$.  The same approach is used in the
+  Stan \texttt{generated quantities} block for posterior
+  predictive replication.
+\end{remark}
+
+\paragraph{Sampling design.}
+From each finite population, a stratified cluster sample of
+approximately $N \approx 7{,}000$ providers is drawn using
+size-biased inclusion probabilities
+$\log\pi_i = c_0 + \rho_{\mathrm{inc}} \cdot y_i^*$
+(\cref{eq:sim-inclusion}), where $y_i^*$ is the standardized
+latent outcome and $c_0$ is calibrated to the target sample size
+\citep[cf.][]{SavitskyToth2016}.
+The three scenarios (S0, S3, S4) are defined in
+\cref{tab:sim-scenarios}; see~\cref{sec:simulation} for the
+full discussion.  Survey weights are computed as
+$w_i = 1/\pi_i$ and normalized to sum to~$N$ for the
+pseudo-posterior.

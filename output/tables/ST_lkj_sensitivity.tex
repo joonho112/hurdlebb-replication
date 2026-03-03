@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\caption{LKJ prior sensitivity analysis. Each row reports posterior summaries from M3b-W fitted with 
+  $\mathrm{LKJ}(\eta)$ prior on the $10 \times 10$ random-effect correlation matrix $\Omega$.
+  The baseline specification is $\eta = 2$ (uniform over correlations). 
+  $\rho_{\mathrm{cross}} = \Omega_{1,6}$ is the cross-margin correlation between extensive and intensive intercepts.
+  $\alpha_{\mathrm{pov}}$ and $\beta_{\mathrm{pov}}$ are the poverty coefficients for the extensive and intensive margins.
+  $\tau_1^{\mathrm{ext}}$ and $\tau_1^{\mathrm{int}}$ are the intercept random-effect standard deviations.
+  All covariates are standardized.}
+\label{tab:lkj-sensitivity}
+\smallskip
+\small
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}r r@{\hspace{4pt}}l rr rr r c@{}}
+\toprule
+$\eta$ & $\hat{\rho}_{\mathrm{cross}}$ & [95\% CI] & $\alpha_{\mathrm{pov}}$ & $\beta_{\mathrm{pov}}$ & $\tau_1^{\mathrm{ext}}$ & $\tau_1^{\mathrm{int}}$ & $\widehat{\mathrm{elpd}}_{\mathrm{loo}}$ & Diag.~\\
+\midrule
+$1.0$ & $0.191$ & $[-0.261,\; 0.604]$ & $-0.322$ & $0.088$ & $0.693$ & $0.149$ & $-20913.0$ & \checkmark \\
+$1.5$ & $0.172$ & $[-0.261,\; 0.572]$ & $-0.312$ & $0.074$ & $0.683$ & $0.146$ & $-20915.0$ & \checkmark \\
+$2.0^{\star}$ & $0.170$ & $[-0.259,\; 0.573]$ & $-0.320$ & $0.098$ & $0.682$ & $0.144$ & $-20915.7$ & \checkmark \\
+$3.0$ & $0.145$ & $[-0.269,\; 0.527]$ & $-0.310$ & $0.132$ & $0.666$ & $0.143$ & $-20917.2$ & \checkmark \\
+$4.0$ & $0.134$ & $[-0.274,\; 0.516]$ & $-0.330$ & $0.093$ & $0.653$ & $0.143$ & $-20916.2$ & \checkmark \\
+$6.0$ & $0.111$ & $[-0.247,\; 0.460]$ & $-0.359$ & $0.113$ & $0.646$ & $0.142$ & $-20914.8$ & \textbf{!} \\
+$8.0$ & $0.097$ & $[-0.256,\; 0.429]$ & $-0.340$ & $0.110$ & $0.639$ & $0.140$ & $-20915.4$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\medskip
+{\footnotesize $^{\star}$Baseline specification ($\eta = 2$ corresponds to a uniform distribution over correlation matrices).}
+\end{table}

@@ -1,0 +1,310 @@
+%% =============================================================================
+%% sm_c4_sandwich.tex — SM-C, Subsection C.4: Sandwich Variance Estimator
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 1003--1195 (bread/meat matrices, cluster-robust J, SVC absorption)
+%% Corrections applied: T2-3 ("exactly" -> "in expectation"), via ref to smb:rem-JeqH
+%% =============================================================================
+
+\subsection{Sandwich variance estimator}
+\label{smc:sandwich}
+
+The main text (\cref{sec:survey}) defines the bread matrix
+$\mathbf{H}_{\mathrm{obs}}$~\eqref{eq:H-obs}, the cluster-robust meat
+matrix $\mathbf{J}_{\mathrm{cluster}}$~\eqref{eq:J-cluster}, and the
+sandwich variance $\mathbf{V}_{\mathrm{sand}}$~\eqref{eq:V-sand}.  This
+subsection provides the detailed derivation: the block-diagonal
+structure of~$\mathbf{H}_{\mathrm{obs}}$, the non-block-diagonal
+structure of~$\mathbf{J}_{\mathrm{cluster}}$, the cluster-robust
+aggregation formula with stratification~\citep{Binder1983}, and the partial absorption of
+within-state clustering by the state-varying coefficients.  Throughout,
+we use the score functions from~\cref{smb:scores} and the sandwich
+convention defined below.
+
+%% ---------------------------------------------------------------------------
+%%  C.4.1  Bread matrix H
+%% ---------------------------------------------------------------------------
+
+\paragraph{Bread matrix.}
+The bread matrix is the negative weighted observed Hessian at the
+posterior mean $\hat{\btheta}$,
+\begin{equation}\label{smc:eq-H}
+  \mathbf{H}_{\mathrm{obs}}
+  = -\sum_{i=1}^{N}\tilde{w}_i\,
+    \frac{\partial^2\log f_{\HBB}(y_i \mid \btheta)}
+         {\partial\btheta\,\partial\btheta\t}
+    \bigg|_{\btheta = \hat{\btheta}}.
+\end{equation}
+By the separability of the hurdle log-likelihood
+(\cref{smc:rem-separability-significance}) and the block-diagonal Fisher
+information (\cref{smb:prop-block-diag}), the bread inherits a two-block
+structure:
+
+\begin{proposition}[Block-diagonal bread matrix]
+\label{smc:prop-H-blockdiag}
+  The observed Hessian decomposes as
+  \begin{equation}\label{smc:eq-H-block}
+    \mathbf{H}_{\mathrm{obs}}
+    = \begin{pmatrix}
+        \mathbf{H}_{\textup{ext}} & \mathbf{0} \\
+        \mathbf{0} & \mathbf{H}_{\textup{int}}
+      \end{pmatrix},
+  \end{equation}
+  where\textup{:}
+  \begin{enumerate}[label=\textup{(\roman*)},nosep]
+    \item The extensive block is the weighted logistic information
+    \begin{equation}\label{smc:eq-H-ext}
+      \mathbf{H}_{\textup{ext}}
+      = \sum_{i=1}^{N}\tilde{w}_i\,q_i(1-q_i)\,
+        \mathbf{d}_{1,i}\,\mathbf{d}_{1,i}\t,
+    \end{equation}
+    with $\mathbf{d}_{1,i}
+    = \partial\eta_i^{(1)}/\partial(\balpha\t,\bdelta_{1,s[i]}\t)\t$.
+    This matrix is non-stochastic: it depends on $q_i = q_i(\hat{\btheta})$
+    but not on the observed data $z_i$.
+
+    \item The intensive block is the weighted negative Hessian of the
+    truncated beta-binomial log-likelihood,
+    \begin{equation}\label{smc:eq-H-int}
+      \mathbf{H}_{\textup{int}}
+      = -\sum_{i \in \cl{I}_1}\tilde{w}_i\,
+        \frac{\partial^2 \ell_i^{(2+)}}
+             {\partial\boldsymbol{\phi}_2\,\partial\boldsymbol{\phi}_2\t}
+        \bigg|_{\hat{\btheta}},
+    \end{equation}
+    where $\boldsymbol{\phi}_2
+    = (\bbeta\t,\log\kappa,\bdelta_{2,s[i]}\t)\t$,
+    $\cl{I}_1 = \{i : y_i > 0\}$, and
+    $\ell_i^{(2+)} = \log f_{\textup{BB}}(y_i \mid n_i,\mu_i,\kappa)
+     - \log(1-p_{0,i})$.
+    This block depends on the observed counts $y_i$.
+  \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+  By~\cref{smb:prop-block-diag}, the cross-derivative
+  $\partial^2\ell_i/\partial\boldsymbol{\phi}_1\,\partial\boldsymbol{\phi}_2\t
+  = \mathbf{0}$
+  for every observation~$i$.  Multiplying by $\tilde{w}_i > 0$ and
+  summing preserves this zero block, giving~\eqref{smc:eq-H-block}.
+  The extensive-margin form~\eqref{smc:eq-H-ext} follows from
+  $-\partial^2\ell_i^{(1)}/\partial(\eta_i^{(1)})^2 = q_i(1-q_i)$
+  (\cref{smb:prop-ext-paramspace}) and the chain rule.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  C.4.2  Meat matrix J — individual level and non-block-diagonality
+%% ---------------------------------------------------------------------------
+
+\paragraph{Meat matrix and cross-margin coupling.}
+The individual-level meat matrix is
+\begin{equation}\label{smc:eq-J-ind}
+  \mathbf{J}_{\textup{ind}}
+  = \sum_{i=1}^{N}\tilde{w}_i^2\,\mathbf{s}_i\,\mathbf{s}_i\t,
+\end{equation}
+where $\mathbf{s}_i
+= \partial\log f_{\HBB}(y_i \mid \btheta)/\partial\btheta
+  \big|_{\hat{\btheta}}$
+is the observation-level score.
+
+\begin{remark}[Non-block-diagonal meat]
+\label{smc:rem-J-nonblockdiag}
+  Unlike the bread, the meat matrix is \emph{not} block-diagonal between
+  the extensive and intensive margins.  The cross-block is
+  \begin{equation}\label{smc:eq-J-cross}
+    \mathbf{J}^{\textup{ext,int}}
+    = \sum_{i=1}^{N}\tilde{w}_i^2\,
+      \mathbf{s}_i^{\textup{ext}}\,
+      (\mathbf{s}_i^{\textup{int}})\t.
+  \end{equation}
+  For $y_i = 0$, the intensive score $\mathbf{s}_i^{\textup{int}}
+  = \mathbf{0}$, so the cross-product vanishes.  But for $y_i > 0$,
+  both $\mathbf{s}_i^{\textup{ext}} = (1-q_i)\mathbf{d}_{1,i}$ and
+  $\mathbf{s}_i^{\textup{int}} \neq \mathbf{0}$, so the cross-block
+  receives a nonzero contribution from every positive observation.  In
+  consequence, the sandwich variance
+  $\mathbf{V}_{\mathrm{sand}}
+  = \mathbf{H}_{\mathrm{obs}}^{-1}\mathbf{J}\mathbf{H}_{\mathrm{obs}}^{-1}$
+  is not block-diagonal even though $\mathbf{H}_{\mathrm{obs}}$ is.  This
+  cross-margin coupling is a general feature of sandwich estimators in
+  hurdle models: a single PSU contributes weighted scores from both
+  margins simultaneously.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  C.4.3  E[J] = H under equal weights
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Reduction under equal weights]
+\label{smc:rem-equal-weights}
+  Under uniform weights $\tilde{w}_i = 1$ and correct model
+  specification, the information identity gives
+  $\E[\mathbf{J}_{\textup{ind}}] = \mathbf{H}_{\mathrm{obs}}$
+  \citep[see][for the pseudo-posterior analogue]{WilliamsSavitsky2021}, so
+  $\mathbf{V}_{\mathrm{sand}} \to \mathbf{H}_{\mathrm{obs}}^{-1}$ and
+  the sandwich reduces to the model-based variance.  For the extensive
+  margin, $\E[\mathbf{J}_{\textup{ext}}] = \mathbf{H}_{\textup{ext}}$
+  holds exactly, because the logistic Hessian is non-random (see
+  \cref{smb:rem-ext-info}; under unequal survey weights the identity
+  breaks because $\mathbf{H}$ involves $\tilde{w}_i$ while
+  $\E[\mathbf{J}]$ involves $\tilde{w}_i^2$).  For the intensive margin, the identity holds only
+  in expectation and the finite-sample discrepancy between
+  $\mathbf{J}_{\textup{int}}$ and $\mathbf{H}_{\textup{int}}$ is
+  nonzero.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  C.4.4  Cluster-robust meat (Proposition 4.2)
+%% ---------------------------------------------------------------------------
+
+\paragraph{Cluster-robust aggregation.}
+The individual-level $\mathbf{J}_{\textup{ind}}$ treats observations as
+independent.  In the NSECE stratified cluster design
+\citep{NSECEProjectTeam2022}, providers within
+the same primary sampling unit (PSU) share neighborhood
+characteristics, inducing within-PSU correlation.  The cluster-robust
+meat matrix replaces individual scores with PSU-level aggregates,
+centered within strata.
+
+\begin{definition}[PSU-level score totals]
+\label{smc:def-psu-scores}
+  For stratum $h = 1,\ldots,H$ and PSU $c = 1,\ldots,C_h$ within
+  stratum~$h$, define
+  \begin{equation}\label{smc:eq-s-psu}
+    \bar{\mathbf{s}}_{hc}
+    = \sum_{i \in \textup{PSU}(h,c)} \tilde{w}_i\,\mathbf{s}_i,
+  \end{equation}
+  where $\textup{PSU}(h,c) = \{i : \texttt{vstratum}[i]=h,\;
+  \texttt{vpsu}[i]=c\}$.  The stratum mean is
+  \begin{equation}\label{smc:eq-s-stratum}
+    \bar{\mathbf{s}}_h
+    = \frac{1}{C_h}\sum_{c=1}^{C_h}\bar{\mathbf{s}}_{hc}.
+  \end{equation}
+\end{definition}
+
+\begin{proposition}[Cluster-robust meat matrix]
+\label{smc:prop-cluster-robust}
+  Under the stratified cluster design with $H$~strata and
+  $C_h$~PSUs in stratum~$h$, the cluster-robust meat matrix is
+  \begin{equation}\label{smc:eq-J-cluster}
+    \boxed{%
+      \mathbf{J}_{\mathrm{cluster}}
+      = \sum_{h=1}^{H}\frac{C_h}{C_h-1}
+        \sum_{c=1}^{C_h}
+        (\bar{\mathbf{s}}_{hc} - \bar{\mathbf{s}}_h)\,
+        (\bar{\mathbf{s}}_{hc} - \bar{\mathbf{s}}_h)\t.
+    }
+  \end{equation}
+  This estimator accounts for\textup{:}
+  \textup{(i)}~within-PSU correlation, by aggregating scores to PSU
+  totals\textup{;}
+  \textup{(ii)}~stratification, by centering PSU scores within strata
+  so that only within-stratum variation across PSUs contributes\textup{;}
+  \textup{(iii)}~unequal cluster sizes, through the weight-aggregated
+  PSU totals $\bar{\mathbf{s}}_{hc}$\textup{;}
+  \textup{(iv)}~finite-sample degrees of freedom, via the factor
+  $C_h/(C_h-1)$.
+\end{proposition}
+
+\begin{proof}
+  The design-based variance of the weighted score total under
+  stratified sampling decomposes as
+  \[
+    \Var_{\textup{design}}\!\Bigl(\sum_i\tilde{w}_i\,\mathbf{s}_i\Bigr)
+    = \sum_{h=1}^{H}
+      \Var_h\!\Bigl(\sum_{c=1}^{C_h}\bar{\mathbf{s}}_{hc}\Bigr),
+  \]
+  because sampling across strata is independent.  Within stratum~$h$,
+  PSUs are sampled without replacement from the population of
+  $C_h^{\ast}$~PSUs.  Under the ``ultimate cluster'' assumption that
+  $C_h / C_h^{\ast} \approx 0$ (negligible PSU sampling fraction),
+  the finite-population correction is dropped and the within-stratum
+  variance estimator is
+  \[
+    \widehat{\Var}_h
+    = \frac{C_h}{C_h-1}
+      \sum_{c=1}^{C_h}
+      (\bar{\mathbf{s}}_{hc}-\bar{\mathbf{s}}_h)\,
+      (\bar{\mathbf{s}}_{hc}-\bar{\mathbf{s}}_h)\t,
+  \]
+  the standard unbiased estimator of the variance of a total from
+  $C_h$~units.  Summing over strata gives
+  $\mathbf{J}_{\mathrm{cluster}}$.
+\end{proof}
+
+\begin{remark}[Degrees of freedom]
+\label{smc:rem-dof}
+  The cluster-robust estimator has
+  $\sum_{h=1}^{H}(C_h - 1) = 415 - 30 = 385$ effective degrees of
+  freedom.  With $C_h$ ranging from~5 to~36 (median~$\approx 14$), each
+  stratum contributes at least~4 degrees of freedom.  This comfortably
+  exceeds the rule-of-thumb threshold of $\sum_h(C_h - 1) > 30$ for
+  stable sandwich variance estimation.
+\end{remark}
+
+\begin{remark}[Individual versus cluster-level $\mathbf{J}$]
+\label{smc:rem-J-comparison}
+  When there is no within-PSU correlation conditional on covariates,
+  $\mathbf{J}_{\mathrm{cluster}}$ and $\mathbf{J}_{\textup{ind}}$
+  converge to the same population quantity.  In practice, within-PSU
+  correlation inflates $\mathbf{J}_{\mathrm{cluster}}$ relative to
+  $\mathbf{J}_{\textup{ind}}$; the parameter-specific ratio
+  $\diag(\mathbf{V}_{\mathrm{sand}})
+  / \diag(\mathbf{H}_{\mathrm{obs}}^{-1}
+           \mathbf{J}_{\textup{ind}}
+           \mathbf{H}_{\mathrm{obs}}^{-1})$
+  provides an estimate of the cluster design effect.
+  The design effect ratio (DER) classification and diagnostics are
+  developed in~\cref{smc:der} below.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  C.4.5  SVC partial absorption (Proposition 4.3)
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Partial absorption of clustering by SVCs]
+\label{smc:prop-svc-absorption}
+  The state-varying coefficients $\bepsilon_s$ partially absorb
+  within-state clustering.  For any two providers $i,j$ in the same
+  state~$s$ and the same PSU,
+  \begin{equation}\label{smc:eq-svc-absorption}
+    \E_{\bepsilon_s}\!\bigl[
+      \Cov(s_i,\,s_j \mid \bepsilon_s)
+    \bigr]
+    \;\leq\;
+    \Cov(s_i,\,s_j),
+  \end{equation}
+  with equality if and only if $\Cov(\E[s_i \mid \bepsilon_s],\,
+  \E[s_j \mid \bepsilon_s]) = 0$.
+\end{proposition}
+
+\begin{proof}
+  By the law of total covariance,
+  \[
+    \Cov(s_i,\,s_j)
+    = \E\!\bigl[\Cov(s_i,\,s_j \mid \bepsilon_s)\bigr]
+    + \Cov\!\bigl(
+        \E[s_i \mid \bepsilon_s],\;
+        \E[s_j \mid \bepsilon_s]
+      \bigr).
+  \]
+  The second term is non-negative, so
+  $\Cov(s_i,s_j) \geq \E[\Cov(s_i,s_j \mid \bepsilon_s)]$.
+  At the posterior mean $\hat{\btheta}$ (which includes state-specific
+  $\hat{\bepsilon}_s$), the plug-in conditional covariance is an estimate
+  of $\Cov(s_i,s_j \mid \bepsilon_s)$; hence
+  $\mathbf{J}_{\mathrm{cluster}}$ evaluated at $\hat{\btheta}$ will
+  be smaller than under a model without SVCs.
+\end{proof}
+
+\begin{remark}[Residual clustering]
+\label{smc:rem-residual-clustering}
+  The inequality~\eqref{smc:eq-svc-absorption} shows that SVCs reduce
+  but do not eliminate within-PSU correlation.  The residual correlation
+  reflects neighborhood-level effects not captured by the five
+  state-varying covariates (poverty, race/ethnicity, urbanicity): local
+  labor market conditions, municipal zoning, co-located service
+  providers, and other spatially structured unobservables.  The sandwich
+  correction with cluster-robust~$\mathbf{J}_{\mathrm{cluster}}$ remains
+  necessary to account for this residual design effect.
+\end{remark}

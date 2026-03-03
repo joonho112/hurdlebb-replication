@@ -1,0 +1,82 @@
+%% =============================================================================
+%% sm_e4_mcmc.tex — SM-E, Subsection E.4: MCMC Configuration
+%% Body content only (\subsection level); parent structure in sm_e.tex
+%% =============================================================================
+
+\subsection{MCMC configuration}
+\label{sme:mcmc}
+
+All models are fitted using Stan
+\citep{CarpenterEtAl2017} with the No-U-Turn Sampler
+\citep[NUTS;][]{Hoffman2014} via the \textsf{CmdStanR} interface
+\citep{CmdStanR2024}.  \Cref{sme:tab-mcmc} reports the sampler
+configuration.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{@{}l ll@{}}
+    \toprule
+    Setting & Empirical (M0--M3b) & Simulation \\
+    \midrule
+    Chains                  & 4 (parallel) & 4 (parallel) \\
+    Warmup iterations       & 1{,}000 per chain & 1{,}500 per chain \\
+    Sampling iterations     & 1{,}000 per chain & 2{,}000 per chain \\
+    Total post-warmup draws & 4{,}000 & 8{,}000 \\
+    \texttt{adapt\_delta}    & 0.95 & 0.95 \\
+    \texttt{max\_treedepth}  & 12 & 14 \\
+    \bottomrule
+  \end{tabular}
+  \caption{MCMC configuration.  The empirical case study (M0--M3b)
+    uses the default \textsf{hurdlebb} settings; the simulation study
+    uses longer runs and higher \texttt{max\_treedepth} to ensure
+    adequate exploration across 200 replications.  In both cases,
+    \texttt{adapt\_delta} $= 0.95$ reduces the step size to avoid
+    divergent transitions in the state-varying coefficient models.}
+  \label{sme:tab-mcmc}
+\end{table}
+
+\paragraph{Convergence targets.}
+As stated in~\cref{alg:estimation}, we require the following
+diagnostic thresholds for all parameters~\citep{Vehtari2021}:
+(i)~split-$\hat{R} < 1.01$;
+(ii)~minimum bulk $\ESS > 400$;
+(iii)~minimum tail $\ESS > 400$; and
+(iv)~zero divergent transitions.
+All five models satisfy these thresholds; detailed diagnostics
+are available in the replication package.
+
+\paragraph{Warm-start initialization.}
+The five-model sequence M0 $\to$ M1 $\to$ M2 $\to$ M3a $\to$ M3b
+is fitted progressively: the posterior mean from model~$k$ is used
+to initialize model~$k+1$.  Specifically:
+\begin{itemize}
+  \item Fixed-effect coefficients ($\balpha$, $\bbeta$,
+    $\log\kappa$) are initialized at the predecessor's posterior
+    means.
+  \item Scale parameters ($\boldsymbol{\tau}$) are initialized at the
+    predecessor's posterior means when dimensions match, or at~$0.1$
+    when new dimensions are introduced.
+  \item Cholesky factors ($\mathbf{L}_\varepsilon$) are initialized at
+    the identity matrix, which corresponds to zero correlation---a
+    conservative starting point that lets the sampler discover
+    correlations during warmup.
+  \item NCP variates ($\bz_s$) are initialized at zero, placing all
+    states at the global mean.
+  \item Policy moderator coefficients ($\bGamma$, M3b only) are
+    initialized at the predecessor's posterior means or at zero for
+    newly introduced parameters.
+\end{itemize}
+This strategy avoids the slow exploration that can occur when complex
+models are initialized far from the posterior mode.
+
+\paragraph{Runtime benchmarks.}
+On a 16-core workstation, approximate wall-clock times are:
+M0~($\sim$5 minutes),
+M1~($\sim$15 minutes),
+M2~($\sim$30 minutes),
+M3a~($\sim$50 minutes),
+M3b~($\sim$60 minutes),
+and M3b-W~($\sim$70 minutes, including score extraction in the
+\texttt{generated quantities} block).  The total sequential fitting
+time is approximately 4~hours with warm-start initialization, compared
+to approximately 7~hours with cold starts.

@@ -1,0 +1,52 @@
+"State","MR Percentile","Tiered Reimbursement","IT Addon"
+"Alabama",46,1,0
+"Alaska",11,0,0
+"Arizona",8,1,0
+"Arkansas",80,1,1
+"California",55,0,0
+"Colorado",10,1,1
+"Connecticut",4,1,0
+"Delaware$^{\dagger}$",65,0,0
+"District of Columbia",43,1,1
+"Florida",25,1,1
+"Georgia",50,1,0
+"Hawaii",56,0,0
+"Idaho$^{\dagger}$",40,0,0
+"Illinois",30.5,1,0
+"Indiana",32,1,0
+"Iowa$^{\dagger}$",40,1,0
+"Kansas",15,0,0
+"Kentucky",33,0,1
+"Louisiana",50,0,1
+"Maine$^{\dagger}$",50,1,0
+"Maryland",8,1,0
+"Massachusetts",58,1,1
+"Michigan",71,1,1
+"Minnesota",25.5,1,0
+"Mississippi$^{\dagger}$",54,1,0
+"Missouri",46,1,0
+"Montana$^{\dagger}$",75,1,0
+"Nebraska",60,1,0
+"Nevada",8.3,1,0
+"New Hampshire",50,1,0
+"New Jersey",19,1,1
+"New Mexico$^{\dagger}$",74,1,0
+"New York",69,1,0
+"North Carolina",56,1,0
+"North Dakota",33,1,0
+"Ohio",16,1,0
+"Oklahoma",35.67,1,1
+"Oregon",75,1,0
+"Pennsylvania",22.2,1,1
+"Rhode Island",12,1,0
+"South Carolina",75,1,0
+"South Dakota",80,1,1
+"Tennessee",21,1,0
+"Texas",57,1,0
+"Utah$^{\dagger}$",69,1,0
+"Vermont$^{\dagger}$",1.08,1,0
+"Virginia",18,1,0
+"Washington",8.2,1,0
+"West Virginia$^{\dagger}$",75,1,0
+"Wisconsin",53,1,0
+"Wyoming",15,1,0

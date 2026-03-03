@@ -1,0 +1,245 @@
+%% =============================================================================
+%% sm_c3_bvm.tex — SM-C, Subsection C.3: Bernstein–von Mises Approximation
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 784--922 (Theorem 3.2, Proposition 3.8, Corollary 3.1, Remarks)
+%% Correction applied: T1-1 (BvM reframe — diagnostic, not formal violation)
+%% =============================================================================
+
+\subsection{Bernstein--von Mises approximation}
+\label{smc:bvm}
+
+The sandwich correction in~\cref{sec:survey} rests on a
+Bernstein--von Mises (BvM) theorem for pseudo-posteriors: as
+$N \to \infty$, the pseudo-posterior converges to a normal distribution
+centered at the pseudo-MLE with variance given by the inverse observed
+Hessian, $\mathbf{H}_{\mathrm{obs}}^{-1}$.  We state the precise result, verify its regularity
+conditions for the HBB model, and provide a finite-sample
+diagnostic for the NSECE weight configuration that motivates the
+sandwich correction as a robustness measure.
+
+%% --- BvM Theorem ---
+
+\begin{theorem}[Design-consistent BvM for the pseudo-posterior]
+\label{smc:thm-bvm}
+  Suppose the following regularity conditions hold\textup{:}
+  \begin{enumerate}[label=\textup{(C\arabic*)},nosep]
+    \item \label{smc:C1}%
+      \textup{Smoothness.}
+      The log-density $\log f_{\HBB}(y \mid \btheta)$ is twice
+      continuously differentiable in $\btheta$ on the interior of the
+      parameter space $\Theta$.
+    \item \label{smc:C2}%
+      \textup{Interior parameter.}
+      The true superpopulation parameter $\btheta_0$ lies in the
+      interior of $\Theta$.
+    \item \label{smc:C3}%
+      \textup{Weight regularity.}
+      The ratio of the largest to smallest normalized weight satisfies
+      $\max_i \tilde{w}_i / \min_i \tilde{w}_i = O(N^{\delta})$ for
+      some $\delta < 1/2$ as $N \to \infty$.
+    \item \label{smc:C4}%
+      \textup{Information regularity.}
+      The weighted Hessian $\mathbf{H}_{\mathrm{obs}}(\btheta_0)$ is
+      positive definite, with eigenvalues bounded away from zero and
+      infinity.
+    \item \label{smc:C5}%
+      \textup{Prior regularity.}
+      The prior density $\pi(\btheta)$ is continuous and strictly
+      positive in a neighborhood of $\btheta_0$.
+  \end{enumerate}
+  Then, as $N \to \infty$\textup{,}
+  \begin{equation}\label{smc:eq-bvm}
+    \sup_{B \in \cl{B}}
+    \bigl|
+      \pi^{(w)}(\btheta \in B \mid \by)
+      - \Phi_{\hat{\btheta}^{(w)},\,\mathbf{H}_{\mathrm{obs}}^{-1}}(B)
+    \bigr|
+    \xrightarrow{P_{\btheta_0}} 0,
+  \end{equation}
+  where $\cl{B}$ is the class of Borel-measurable convex sets,
+  $\hat{\btheta}^{(w)}$ is the pseudo-MLE,
+  $\Phi_{\bmu,\bSigma}$ denotes the CDF of
+  $\Norm(\bmu, \bSigma)$, and $\mathbf{H}_{\mathrm{obs}}$ is the
+  observed Hessian of the pseudo-log-likelihood evaluated at
+  $\hat{\btheta}^{(w)}$.
+\end{theorem}
+
+The result is a pseudo-posterior analogue of the classical BvM theorem
+\citep{KleijnVanDerVaart2012}, extended to the survey-weighted setting by
+\citet{SavitskyToth2016} and~\citet{WilliamsSavitsky2021}.  The key
+difference from the standard BvM is condition~\ref{smc:C3}, which
+constrains how rapidly the weight ratio may grow with sample size.
+Importantly, the \emph{pseudo-posterior variance}
+$\mathbf{H}_{\mathrm{obs}}^{-1}$ differs from the
+\emph{design-consistent sampling variance} of $\hat{\btheta}^{(w)}$,
+\[
+  \hat{\btheta}^{(w)}
+  \;\dot{\sim}\;
+  \Norm\!\bigl(\btheta_0,\;
+  \mathbf{V}_{\mathrm{sand}}\bigr),
+  \qquad
+  \mathbf{V}_{\mathrm{sand}}
+  = \mathbf{H}_{\mathrm{obs}}^{-1}\,
+    \mathbf{J}_{\mathrm{cluster}}\,
+    \mathbf{H}_{\mathrm{obs}}^{-1},
+\]
+as defined in~\eqref{eq:V-sand}. Under informative sampling or model
+misspecification,
+$\mathbf{J}_{\mathrm{cluster}} \neq \mathbf{H}_{\mathrm{obs}}$,
+so naive credible intervals based on $\mathbf{H}_{\mathrm{obs}}^{-1}$
+are miscalibrated as a measure of frequentist uncertainty.  This
+mismatch is precisely what motivates the sandwich correction developed
+in~\cref{smc:sandwich}: \cref{smc:cor-coverage} below quantifies
+the resulting coverage distortion, and
+\cref{thm:cholesky} provides the operational calibration.
+
+%% --- Verification of conditions ---
+
+\paragraph{Verification.}
+We verify each condition for the HBB model and the NSECE data.
+
+\medskip\noindent\textit{\ref{smc:C1}: Smoothness.}\enspace
+The HBB log-density involves $\log\Gamma$ functions (through the
+beta-binomial PMF), the logistic link
+$\sigma(\eta) = 1/(1+e^{-\eta})$, and the zero probability $p_0$
+(a finite sum of $\log\Gamma$ terms).  Each component is $C^{\infty}$
+on the interior of the parameter space, so the composite
+$\log f_{\HBB}$ is smooth in $\btheta$.  \checkmark
+
+\medskip\noindent\textit{\ref{smc:C2}: Interior parameter.}\enspace
+The parameter space is
+$\Theta = \R^P \times \R^P \times \R^{2QR} \times
+\mathbb{S}_{++}^{2Q} \times \R_{>0}$,
+and any finite parameter vector with $\kappa > 0$ and
+$\bSigma_\varepsilon \succ 0$ lies in the interior.  \checkmark
+
+\medskip\noindent\textit{\ref{smc:C3}: Weight regularity.}\enspace
+This condition requires a dedicated analysis; see
+\cref{smc:prop-weight-diagnostic} below.
+
+\medskip\noindent\textit{\ref{smc:C4}: Information regularity.}\enspace
+By~\cref{smb:prop-block-diag}, the Fisher information is
+block-diagonal between the extensive and intensive margins.  For the
+extensive block, positive definiteness follows from $\operatorname{rank}(\mathbf{X}) = P$
+and $q_i \in (0,1)$ for all $i$ (standard logistic regression theory).
+For the intensive block, separation of $\mu$ from $\kappa$ requires
+variation in the denominators $n_i$
+(\cref{smb:prop-mu-kappa-id}), which is satisfied empirically
+($n_i$ ranges from~1 to~378 among positive responders).  \checkmark
+
+\medskip\noindent\textit{\ref{smc:C5}: Prior regularity.}\enspace
+The priors specified in~\cref{sec:priors} are all continuous and
+strictly positive in the interior:
+$\Norm(\mathbf{0},\, 2^2\,\mathbf{I}_P)$ on regression coefficients~\citep{GelmanEtAl2008},
+$\HalfNormal(0,1)$ on scale parameters,
+$\LKJ(2)$ on the correlation matrix~\citep{LewandowskiEtAl2009}, and
+$\Norm(2,\, 1.5^2)$ on $\log\kappa$.  \checkmark
+
+%% --- Finite-sample weight diagnostic ---
+
+\begin{proposition}[Finite-sample weight diagnostic]
+\label{smc:prop-weight-diagnostic}
+  For the NSECE 2019 data with $N = 6{,}785$ and
+  $w_{\max}/w_{\min} = 462$\textup{,} the weight ratio exceeds
+  $N^{1/2} \approx 82.4$\textup{,} indicating that the sufficient
+  condition \ref{smc:C3} is not comfortably satisfied for this design.
+  The computation
+  \begin{equation}\label{smc:eq-delta}
+    \delta
+    = \frac{\log 462}{\log 6{,}785}
+    = \frac{6.136}{8.822}
+    \approx 0.695
+    > 0.5
+  \end{equation}
+  is a finite-sample diagnostic, not a valid asymptotic big-$O$ test
+  of condition \ref{smc:C3}.  This motivates the sandwich variance
+  correction as a robustness measure.
+\end{proposition}
+
+\begin{remark}[Interpretation of the diagnostic]
+\label{smc:rem-weight-interpretation}
+  Four observations clarify the scope of
+  \cref{smc:prop-weight-diagnostic}.
+  \begin{enumerate}[label=\textup{(\alph*)},nosep]
+    \item Condition~\ref{smc:C3} is \emph{sufficient}, not necessary.
+      The BvM approximation may remain adequate even when this bound is
+      not met, provided the high-weight observations do not dominate
+      the pseudo-likelihood.
+    \item The fraction of observations with extreme weights is small:
+      the top $1\%$ (weights $w_i > 100$) comprises fewer than 70
+      observations out of $6{,}785$.  The diagnostic is driven by a
+      small number of outlying weights, not a systematic pattern.
+    \item Weight trimming can restore~\ref{smc:C3}.  Capping at the
+      99th percentile reduces $w_{\max}$ to approximately~100, giving
+      $\delta \approx 0.522$; capping at the 95th percentile
+      ($w_{\max} \approx 50$) yields $\delta \approx 0.443 < 0.5$,
+      restoring \ref{smc:C3}.  Weight trimming is examined as a
+      sensitivity analysis in~\cref{app:extended-results}.
+    \item In practice, the sandwich correction
+      \eqref{eq:V-sand} provides the appropriate variance adjustment
+      regardless of whether~\ref{smc:C3} holds exactly: it
+      automatically accounts for the inflated variance due to extreme
+      weights.
+  \end{enumerate}
+\end{remark}
+
+%% --- Coverage calibration ---
+
+\begin{corollary}[Coverage miscalibration of naive credible intervals]
+\label{smc:cor-coverage}
+  Under the conditions of~\cref{smc:thm-bvm}, define\textup{:}
+  \begin{itemize}[nosep]
+    \item $\mathrm{CI}_{\mathrm{naive}}(\alpha)$\textup{:} the
+      $\alpha$-level credible interval from the pseudo-posterior
+      marginal, with variance
+      $[\mathbf{H}_{\mathrm{obs}}]^{-1}$\textup{;}
+    \item $\mathrm{CI}_{\mathrm{sand}}(\alpha)
+      = \hat{\theta}^{(w)} \pm z_{\alpha/2}\sqrt{V_{\mathrm{sand}}}$\textup{:}
+      the sandwich-corrected interval.
+  \end{itemize}
+  Then\textup{:}
+  \begin{enumerate}[label=\textup{(\alph*)},nosep]
+    \item The naive interval has asymptotic coverage
+      $\Phi(z_{\alpha/2}\, r) - \Phi(-z_{\alpha/2}\, r)$, where
+      $r = \sqrt{\lambda_{\mathbf{H}} / \lambda_{\mathrm{sand}}}$ is
+      the ratio of the naive to the sandwich standard deviation and
+      $\Phi$ denotes the standard normal CDF.
+    \item When the sampling is non-informative and the model is
+      correctly specified, $\mathbf{J}_{\mathrm{cluster}} \approx
+      \mathbf{H}_{\mathrm{obs}}$, so $r \approx 1$ and the naive
+      interval has approximately correct coverage.
+    \item Under informative sampling or model misspecification,
+      $r \neq 1$.  If $r < 1$ \textup{(}naive variance too
+      small\textup{)}, the interval is anti-conservative
+      \textup{(}undercoverage\textup{)}---the typical case when the
+      pseudo-posterior overconcentrates.  If $r > 1$, the interval is
+      conservative.
+  \end{enumerate}
+\end{corollary}
+
+\begin{proof}
+  The BvM theorem (\cref{smc:thm-bvm}) implies that the
+  pseudo-posterior converges to
+  $\Norm(\hat{\btheta}^{(w)},\, \mathbf{H}_{\mathrm{obs}}^{-1})$,
+  while the correct sampling distribution of $\hat{\btheta}^{(w)}$ is
+  approximately $\Norm(\btheta_0,\, \mathbf{V}_{\mathrm{sand}})$.
+  The ratio of marginal standard deviations determines the coverage
+  distortion.
+\end{proof}
+
+\begin{remark}[Calibration via the Cholesky transformation]
+\label{smc:rem-cholesky-calibration}
+  \cref{thm:cholesky} provides the operational calibration
+  strategy: the affine transformation
+  \eqref{eq:cholesky-transform} rescales each MCMC draw so that
+  the adjusted posterior has covariance
+  $\mathbf{V}_{\mathrm{sand}}$ while preserving the posterior mean.
+  This replaces the naive variance $\mathbf{H}_{\mathrm{obs}}^{-1}$
+  with the design-consistent sandwich variance, correcting the
+  coverage distortion quantified in~\cref{smc:cor-coverage}.  The
+  block-wise implementation---applying the transformation separately
+  to fixed effects, random effects, and hyperparameters---is discussed
+  in~\cref{sec:survey}; the full proof appears in
+  \cref{smc:cholesky} below.
+\end{remark}

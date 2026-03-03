@@ -1,0 +1,21 @@
+%% =============================================================================
+%% sm_b.tex — Supplementary Material B: Identification and Fisher Information
+%% Body content only (subsections); \section and \label defined in osm_body.tex
+%% Primary source: dev/log/03_research-notes-deep-mathematical-properties.qmd
+%%   §7 (Fisher information, lines 611--689) and §8 (Identification, lines 692--757)
+%% Corrections applied: T1-2 (score sign), T1-5 (Fisher rate), T1-6 (H/J normalization),
+%%   T1-7 (E[J]=H caveat), M1 (n>=3 threshold)
+%% Deferred issues resolved: 11, 14, 22, 23
+%% =============================================================================
+
+This appendix provides the score functions, Fisher information structure,
+and the identification proof for the hurdle beta-binomial model deferred
+from~\cref{sec:model}. We maintain the notation from~\cref{sec:notation},
+with $a = \mu\kappa$, $b = (1-\mu)\kappa$, and the digamma function
+$\psi(x) = \Gamma'(x)/\Gamma(x)$.
+
+\input{sm_b1_scores}
+
+\input{sm_b2_fisher}
+
+\input{sm_b3_identification}

@@ -1,0 +1,12 @@
+"Parameter","Margin","M3b_Mean","M3bW_Mean","Shift","Wald_Lo","Wald_Hi","DER","Wald_Sig","Hausman_z"
+"alpha_intercept","Extensive",0.5582,0.7643,0.2062,0.6772,0.8514,2.04,TRUE,4.638
+"alpha_poverty","Extensive",-0.2202,-0.3236,-0.1033,-0.4263,-0.2208,2.41,TRUE,-1.972
+"alpha_urban","Extensive",0.2637,0.4419,0.1782,0.3746,0.5092,4.18,TRUE,5.188
+"alpha_black","Extensive",0.2483,0.4782,0.2299,0.3916,0.5648,1.54,TRUE,5.204
+"alpha_hispanic","Extensive",-0.1459,0.0055,0.1515,-0.0953,0.1064,1.82,FALSE,2.944
+"beta_intercept","Intensive",-0.096,-0.2423,-0.1462,-0.272,-0.2126,1.36,TRUE,-9.652
+"beta_poverty","Intensive",0.0395,0.0902,0.0507,0.0531,0.1273,1.61,TRUE,2.679
+"beta_urban","Intensive",-0.0552,-0.0472,0.008,-0.0875,-0.0069,3.18,TRUE,0.39
+"beta_black","Intensive",0.102,-0.0167,-0.1187,-0.0524,0.019,1.38,FALSE,-6.513
+"beta_hispanic","Intensive",0.0598,-0.0969,-0.1567,-0.1297,-0.064,1.14,TRUE,-9.355
+"log_kappa","Dispersion",1.6613,1.9187,0.2573,1.8614,1.976,2.58,TRUE,8.797

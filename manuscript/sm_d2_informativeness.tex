@@ -1,0 +1,187 @@
+%% =============================================================================
+%% sm_d2_informativeness.tex — SM-D, Subsection D.2: Informativeness Assessment
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%% Source: dev/stan/R/81_informativeness_tests.R
+%% Corrections applied: T3-1 (full-covariate informativeness tests),
+%%   T3-2 (Hausman test with survey::svyglm + cluster-robust SEs)
+%% =============================================================================
+
+\subsection{Informativeness assessment}
+\label{smd:informativeness}
+
+A sampling design is \emph{informative} if the distribution of the
+outcome among sampled units differs from the superpopulation
+distribution, even after conditioning on covariates
+\citep{Pfeffermann1993}.  Under informative sampling, unweighted
+likelihood-based inference targets a sample-specific, not population,
+quantity, and pseudo-likelihood weighting becomes essential for
+consistent estimation~\citep{SavitskyToth2016}.  We assess
+informativeness of the NSECE~2019 design through three complementary
+diagnostics.
+
+{\upshape\textbf{(Correction T3-1.)}}
+The original informativeness tests conditioned on a single covariate
+(poverty rate).  Since the full model includes $P = 5$ covariates per
+margin, omitted variable bias may mask or inflate apparent
+informativeness.  We now report both the original univariate and the
+corrected full-covariate specifications.
+
+{\upshape\textbf{(Correction T3-2.)}}
+The original Hausman comparison used \texttt{lm(weights = w)} for the
+weighted estimator, which provides only heteroscedasticity-robust
+standard errors.  We now use \texttt{survey::svyglm()} with the full
+stratified cluster design, yielding cluster-robust standard errors
+that account for within-PSU correlation.
+
+\paragraph{Test~1: Marginal weight--outcome correlations.}
+The correlation between $z_i$ (serves infants) and the survey weight
+$w_i$ is $\corr(z_i, w_i) = -0.041$; the correlation between
+the IT share $Y_i / n_i$ (among servers) and $w_i$ is
+$\corr(Y_i/n_i, w_i) = -0.003$.  Both are negligibly small,
+suggesting limited \emph{unconditional} informativeness.  However,
+marginal correlations can mask conditional dependence when the design
+oversamples on covariates correlated with the outcome, motivating the
+regression-based test below.
+
+\paragraph{Test~2: Regression-based informativeness test.}
+Following~\citet{Pfeffermann1993}, we test $H_0\colon \gamma = 0$ in
+the augmented model
+\begin{equation}\label{smd:eq-pfeffermann}
+  g(y_i) = \bx_i^\t \bbeta + \gamma \log(w_i) + \varepsilon_i,
+\end{equation}
+where $g(\cdot)$ is the logit link for the extensive margin and the
+identity for the intensive margin.  If the design is non-informative,
+$\log(w_i)$ carries no additional predictive power for $y_i$ beyond
+$\bx_i$, so $\gamma = 0$.
+
+\Cref{smd:tab-pfeffermann} reports the estimated $\hat{\gamma}$ and
+its $p$-value under two covariate specifications: (i)~univariate, with
+only the standardized poverty rate; and (ii)~full, with all four
+community-level predictors (poverty, urbanicity, percent Black, percent
+Hispanic).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Regression-based informativeness test~\citep{Pfeffermann1993}.
+    The augmented model \eqref{smd:eq-pfeffermann} adds $\log(w_i)$ to the
+    covariate vector; $\hat{\gamma}$ is the coefficient on $\log(w_i)$
+    with its two-sided $p$-value.  {\upshape\textbf{(Correction T3-1:)}}
+    the full-covariate specification reverses the extensive-margin
+    finding from non-significant to significant.}
+  \label{smd:tab-pfeffermann}
+  \smallskip
+  \begin{tabular}{llrr}
+    \toprule
+    Specification & Margin & $\hat{\gamma}$ & $p$-value \\
+    \midrule
+    Univariate (poverty only)
+      & Extensive  & $0.020$  & $0.369$   \\
+      & Intensive  & $0.009$  & $0.002$   \\[4pt]
+    Full covariates (T3-1)
+      & Extensive  & $0.086$  & $<0.001$  \\
+      & Intensive  & $0.006$  & $0.050$   \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Two features of~\cref{smd:tab-pfeffermann} merit comment.  First, under
+the univariate specification, the extensive margin appears
+non-informative ($p = 0.369$) while the intensive margin is clearly
+informative ($p = 0.002$).  Second, adding the remaining three
+covariates \emph{reverses} the extensive-margin verdict: $\hat{\gamma}$
+increases fourfold (from $0.020$ to $0.086$) and becomes highly
+significant ($p < 0.001$).  This reversal arises because the univariate
+model confounds the direct weight--outcome relationship with indirect
+pathways through the omitted covariates (urbanicity, racial
+composition).  When these confounders are included, the residual
+association between $\log(w_i)$ and participation becomes detectable.
+The intensive margin remains informative under both specifications,
+though the coefficient attenuates slightly (from $0.009$ to $0.006$)
+as the full model absorbs some of the weight--outcome association.
+
+The finding that both margins are informative under the full
+specification reinforces the case for pseudo-likelihood weighting in the
+Bayesian hierarchical model and for the sandwich variance correction
+developed in~\cref{app:survey}.
+
+\paragraph{Test~3: Hausman-type comparison.}
+As a complementary diagnostic, we compare unweighted and weighted
+coefficient estimates for each margin.  Under non-informative sampling,
+both estimators are consistent for the same population parameters, but
+the weighted estimator is less efficient; a large discrepancy signals
+that the design distorts the effective covariate--outcome relationship.
+
+{\upshape\textbf{(Correction T3-2:)}} the weighted estimator uses
+\texttt{survey::svyglm()} with the full stratified cluster design ($H =
+30$ strata, $C = 415$ PSUs), which produces cluster-robust standard
+errors.  The Hausman test statistic for each parameter is
+\begin{equation}\label{smd:eq-hausman}
+  Z_k = \frac{\hat{\beta}_k^{\mathrm{WT}} -
+    \hat{\beta}_k^{\mathrm{UW}}}
+  {\sqrt{\widehat{\Var}(\hat{\beta}_k^{\mathrm{WT}}) -
+    \widehat{\Var}(\hat{\beta}_k^{\mathrm{UW}})}},
+\end{equation}
+which is asymptotically standard normal under $H_0$ (no
+informativeness); the variance difference in the denominator is valid
+because the weighted estimator has weakly larger variance under
+non-informativeness.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Hausman-type comparison of unweighted and
+    design-weighted coefficient estimates.
+    {\upshape\textbf{(Correction T3-2:)}} the weighted estimator uses
+    \texttt{survey::svyglm} with cluster-robust standard errors.
+    $Z$ is the per-parameter Hausman statistic
+    \eqref{smd:eq-hausman}.  Asterisks: ${*}$ denotes $p < 0.10$,
+    ${**}$ denotes $p < 0.05$.}
+  \label{smd:tab-hausman}
+  \smallskip
+  \begin{tabular}{llrrrrr}
+    \toprule
+    Margin & Parameter
+      & $\hat{\beta}^{\mathrm{UW}}$ & $\hat{\beta}^{\mathrm{WT}}$
+      & $Z$ & $p$-value & \\
+    \midrule
+    \multirow{5}{*}{Extensive}
+      & Intercept & $0.614$  & $0.662$  & $0.82$  & $0.41$ & \\
+      & Poverty   & $-0.158$ & $-0.199$ & $-0.64$ & $0.52$ & \\
+      & Urban     & $0.176$  & $0.234$  & $2.02$  & $0.044$ & $^{**}$ \\
+      & Black     & $-0.044$ & $0.086$  & $1.89$  & $0.059$ & $^{*}$ \\
+      & Hispanic  & $-0.043$ & $0.059$  & $1.51$  & $0.13$ & \\[4pt]
+    Intensive
+      & \multicolumn{5}{l}{\emph{all $p > 0.24$; none significant}} & \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\Cref{smd:tab-hausman} reveals a nuanced pattern.  On the extensive
+margin, the poverty coefficient itself does not differ significantly
+between estimators ($Z = -0.64$, $p = 0.52$), but the
+\emph{urbanicity} coefficient shows a significant shift
+($\hat{\beta}^{\mathrm{UW}} = 0.176$ versus
+$\hat{\beta}^{\mathrm{WT}} = 0.234$; $Z = 2.02$, $p = 0.044$), and
+the Black composition coefficient is marginally significant ($Z = 1.89$,
+$p = 0.059$).  This indicates that the NSECE oversampling of
+high-need areas primarily distorts the estimated effect of urbanicity
+on IT participation---consistent with the fact that the sampling frame
+explicitly targets urban and high-poverty PSUs.  On the intensive
+margin, no individual parameter shows a significant Hausman
+discrepancy (all $p > 0.24$), suggesting that the informativeness
+detected by Test~2 is diffuse rather than concentrated on a single
+covariate.
+
+\paragraph{Summary.}
+The three diagnostics paint a consistent picture.  Marginal correlations
+(Test~1) are negligible, but the regression-based test (Test~2) reveals
+statistically significant informativeness on \emph{both} margins once
+the full covariate vector is conditioned upon---a finding that was
+masked in the original univariate specification.  The Hausman comparison
+(Test~3) localises the extensive-margin informativeness to the
+urbanicity and racial composition covariates rather than poverty itself.
+Together, these results justify two design choices in the main
+analysis (\cref{sec:application}): (i)~incorporating survey weights
+via pseudo-likelihood, and (ii)~applying the sandwich variance
+correction (\cref{sec:survey}) and the Cholesky affine calibration
+(\cref{app:survey}) to ensure that posterior credible intervals
+reflect the true design-adjusted uncertainty.

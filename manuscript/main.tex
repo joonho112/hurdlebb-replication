@@ -1,0 +1,323 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% main.tex - LaTeX Template for arXiv Preprint (JRSS-C Framing)
+%% Title: A Hierarchical Hurdle Beta-Binomial Model for Survey-Weighted
+%%        Bounded Counts and Its Application to Childcare Enrollment
+%% Author: JoonHo Lee
+%%
+%% DOCUMENT STRUCTURE OVERVIEW:
+%% ============================
+%% This document uses amsart class with custom styling (main.sty).
+%% Content is framed for JRSS Series C (Applied Statistics).
+%%
+%% File dependencies:
+%%   - main.sty     : Custom package with macros, theorems, and formatting
+%%   - references.bib : BibTeX bibliography file
+%%   - osm_body.tex : Online Supplemental Materials body (input after references)
+%%   - Figures/     : Folder for publication-ready figures (PDF)
+%%
+%% Section structure of this manuscript (JRSS-C):
+%%   1. Introduction
+%%   2. Motivating Data and Preliminary Analysis
+%%   3. The Hierarchical Hurdle Beta-Binomial Model
+%%   4. Simulation Study
+%%   5. Application to NSECE Childcare Data
+%%   6. Discussion
+%%   References
+%%   Online Supplemental Materials (Appendices A-E)
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ===========================================================================
+%% PREAMBLE: Document Class and Package Loading
+%% ===========================================================================
+
+\documentclass[12pt, reqno]{amsart}  % AMS article class, 12pt font, equation numbers on right
+
+%% Load custom style file (contains packages, theorems, macros)
+\usepackage{main}
+
+%% Additional packages for this document
+\usepackage{setspace}       % Line spacing control
+\usepackage{booktabs}       % Professional table formatting
+\usepackage{array}          % Extended column options
+\usepackage{makecell}       % Line breaks in table cells
+\usepackage{tabularx}       % Tables with automatic column width
+\usepackage{multirow}       % Multi-row cells in tables
+\usepackage{adjustbox}      % Table width adjustment
+\usepackage{pdflscape}      % Landscape pages for wide tables
+\usepackage{longtable}      % Tables spanning multiple pages
+
+%% Graphics path for figures
+\graphicspath{{Figures/}}
+
+%% Allow slightly looser spacing to prevent minor overfull hbox warnings
+\emergencystretch=1.5em
+
+%% Bibliography: APA 7th style with biblatex
+\usepackage[style=apa, backend=biber, natbib=true, backref=true]{biblatex}
+\addbibresource{references.bib}
+
+%% Simplify backref format: just page numbers
+\DefineBibliographyStrings{english}{%
+  backrefpage = {},
+  backrefpages = {}
+}
+\renewbibmacro*{pageref}{%
+  \iflistundef{pageref}
+    {}
+    {\printtext[brackets]{\printlist[pageref][-\value{listtotal}]{pageref}}}}
+
+%% Table of contents configuration
+\usepackage{titletoc}
+\newcommand\DoToC{%
+  \startcontents
+  \printcontents{}{0}{\textbf{Contents}\vskip1em\hrule\vskip1em}
+  \vskip1em\hrule\vskip5pt
+}
+
+%% Page geometry - 1.25in margins
+\newgeometry{margin=1.25in}
+
+%% ===========================================================================
+%% TITLE AND AUTHOR INFORMATION
+%% ===========================================================================
+
+\title{\Large A Bayesian Hierarchical Hurdle Beta-Binomial Model for Survey-Weighted Bounded Counts and Its Application to Childcare Enrollment}
+
+\author{JoonHo Lee}
+
+%% Author affiliations and acknowledgments in \date field (amsart convention)
+\date{\footnotesize March 2, 2026. \\[0.5em]
+Lee: The University of Alabama, Tuscaloosa, AL, USA. jlee296@ua.edu.
+\\[0.5em]
+This research was supported by the Office of Planning, Research, and Evaluation (OPRE), Administration for Children and Families, U.S.\ Department of Health and Human Services, through Grant 90YE0346 to the University of Nevada, Las Vegas (PI: Gerilyn Slicker), with a subaward to the University of Alabama. The opinions expressed are those of the author and do not represent views of the Administration for Children and Families or the U.S.\ Department of Health and Human Services.
+}
+
+%% ===========================================================================
+%% DOCUMENT FORMATTING
+%% ===========================================================================
+
+\onehalfspacing    % 1.5 line spacing
+\raggedbottom      % Don't stretch content to fill page
+\numberwithin{equation}{section}  % Equation numbers include section (e.g., 2.1, 2.2)
+
+%% Fix for hyperref duplicate destination warnings in main body
+\renewcommand{\theHequation}{\thesection.\arabic{equation}}
+\renewcommand{\theHfigure}{\thesection.\arabic{figure}}
+\renewcommand{\theHtable}{\thesection.\arabic{table}}
+
+%% Fix for algorithm line number anchor collisions
+\makeatletter
+\renewcommand{\theHALG@line}{\thealgorithm.\arabic{ALG@line}}
+\makeatother
+
+%% ===========================================================================
+%% DOCUMENT BODY BEGINS
+%% ===========================================================================
+
+\begin{document}
+
+%% ===========================================================================
+%% ABSTRACT (must come BEFORE \maketitle in amsart class)
+%% ===========================================================================
+
+\begin{abstract}
+Bounded discrete proportions---counts out of known totals---present
+modeling challenges when data exhibit structural zeros, overdispersion,
+and hierarchical clustering.  We develop a Bayesian hierarchical hurdle
+beta-binomial model with state-varying coefficients that addresses
+all four features.  The framework makes three methodological contributions:
+(i)~it studies cross-margin dependence via a cross-block covariance
+component and clarifies when and how this parameter is identified
+through the hierarchical layer rather than the conditional likelihood;
+(ii)~it proposes a Cholesky-based sandwich variance calibration for
+pseudo-posterior inference under survey weights, guided by a
+parameter-specific design effect ratio diagnostic; and
+(iii)~it introduces a log-scale marginal effect decomposition
+for hurdle models that translates regression coefficients
+into policy-relevant quantities.  Applied to
+6,785~childcare providers across 51~states from the 2019 National Survey
+of Early Care and Education, the model reveals a ``poverty reversal'':
+poverty reduces enrollment participation yet increases intensity among
+participants, with the extensive margin accounting for two-thirds of the
+total effect.  Design-calibrated simulation shows that sandwich-corrected
+intervals substantially improve coverage, reaching 82--88.5\% at
+the 90\% nominal level for fixed effects.  The R package \textsf{hurdlebb} implements
+all methods.
+\end{abstract}
+
+\maketitle  % Generate title block
+
+%% Keywords (JRSS-C: 5-6 keywords, alphabetical order)
+\noindent\textbf{Keywords:} Bayesian hierarchical model; beta-binomial distribution; bounded discrete proportions; hurdle model; sandwich variance correction; survey weighting
+
+\pagestyle{plain}  % Simple page numbers
+\newpage
+
+%% ===========================================================================
+%% MAIN TEXT SECTIONS (JRSS-C Structure: 6 sections)
+%% ===========================================================================
+
+%% ---------------------------------------------------------------------------
+%% SECTION 1: Introduction (~1,200 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 1 body loaded from separate file
+\input{section1}
+
+%% ---------------------------------------------------------------------------
+%% SECTION 2: Motivating Data and Preliminary Analysis (~1,800 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 2 body loaded from separate file
+\input{section2}
+
+%% ---------------------------------------------------------------------------
+%% SECTION 3: The Hierarchical Hurdle Beta-Binomial Model (~3,500 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 3 body loaded from separate file
+\input{section3}
+
+%% ---------------------------------------------------------------------------
+%% SECTION 4: Simulation Study (~1,500 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 4 body loaded from separate file
+\input{section4}
+
+%% ---------------------------------------------------------------------------
+%% SECTION 5: Application to NSECE Childcare Data (~2,500 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 5 body loaded from separate file
+\input{section5}
+
+%% ---------------------------------------------------------------------------
+%% SECTION 6: Discussion (~1,000 words)
+%% ---------------------------------------------------------------------------
+
+%% Section 6 body loaded from separate file
+\input{section6}
+
+%% ===========================================================================
+%% END-MATTER STATEMENTS
+%% ===========================================================================
+
+\bigskip
+
+\paragraph{Software and reproducibility.}
+The companion R package \textsf{hurdlebb}~\citep{hurdlebb2026} implements
+the full methodology developed in this paper, including survey-weighted
+pseudo-posterior inference, sandwich variance correction via Cholesky
+transformation, and marginal effect decomposition.  The package is
+available at \url{https://github.com/joonho112/hurdlebb} with
+documentation at \url{https://joonho112.github.io/hurdlebb/}.  A
+separate replication package at
+\url{https://github.com/joonho112/hurdlebb-replication} contains all
+analysis scripts needed to reproduce every result reported in this paper,
+conditional on access to the NSECE restricted-use data.  The complete
+estimation pipeline is described in~\cref{alg:estimation};
+Supplementary Material~E (\cref{app:sim-computation}) provides
+computational details including Stan configuration, convergence
+diagnostics, and runtime benchmarks.
+
+\paragraph{Data availability.}
+The empirical results in this paper are based on data from the 2019
+National Survey of Early Care and Education (NSECE). All key variables
+used in the analysis---including the state identifier, community-level
+poverty rate, urbanicity, racial/ethnic composition, infant/toddler
+enrollment counts, and total enrollment---are available only through the
+NSECE Restricted-Use Files (ICPSR Study 38445,
+\url{https://www.icpsr.umich.edu/web/ICPSR/studies/38445}). For
+researchers interested in the methodology without access to the restricted
+data, the \textsf{hurdlebb} package includes a synthetic dataset
+(\texttt{nsece\_synth}) that preserves the essential distributional
+characteristics of the original data.
+
+\paragraph{Funding.}
+This research was supported by the Office of Planning, Research, and
+Evaluation (OPRE), Administration for Children and Families, U.S.\
+Department of Health and Human Services, through Grant 90YE0346 to the
+University of Nevada, Las Vegas (PI: Gerilyn Slicker), with a subaward
+to the University of Alabama. The opinions expressed are those of the
+author and do not represent views of the Administration for Children and
+Families or the U.S.\ Department of Health and Human Services.
+
+%% ===========================================================================
+%% REFERENCES
+%% ===========================================================================
+
+\printbibliography[title={References}]
+
+%% ===========================================================================
+%% ONLINE SUPPLEMENTAL MATERIALS
+%% ===========================================================================
+
+\newpage
+\appendix
+\setcounter{section}{0}
+\renewcommand{\thesection}{\Alph{section}}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+%% Fix for hyperref duplicate destination warnings
+\renewcommand{\theHequation}{App.\thesection.\arabic{equation}}
+\renewcommand{\theHfigure}{App.\thesection.\arabic{figure}}
+\renewcommand{\theHtable}{App.\thesection.\arabic{table}}
+\renewcommand{\theHlemma}{App.\thesection.\arabic{lemma}}
+\renewcommand{\theHtheorem}{App.\thesection.\arabic{theorem}}
+\renewcommand{\theHcorollary}{App.\thesection.\arabic{corollary}}
+\renewcommand{\theHproposition}{App.\thesection.\arabic{proposition}}
+\renewcommand{\theHdefinition}{App.\thesection.\arabic{definition}}
+\renewcommand{\theHremark}{App.\thesection.\arabic{remark}}
+\renewcommand{\theHexample}{App.\thesection.\arabic{example}}
+\renewcommand{\theHconjecture}{App.\thesection.\arabic{conjecture}}
+
+%% Reset theorem-like counters for appendix numbering
+\setcounter{lemma}{0}
+\renewcommand{\thelemma}{\thesection.\arabic{lemma}}
+\setcounter{theorem}{0}
+\renewcommand{\thetheorem}{\thesection.\arabic{theorem}}
+\setcounter{corollary}{0}
+\renewcommand{\thecorollary}{\thesection.\arabic{corollary}}
+\setcounter{proposition}{0}
+\renewcommand{\theproposition}{\thesection.\arabic{proposition}}
+\setcounter{definition}{0}
+\renewcommand{\thedefinition}{\thesection.\arabic{definition}}
+\setcounter{remark}{0}
+\renewcommand{\theremark}{\thesection.\arabic{remark}}
+\setcounter{example}{0}
+\renewcommand{\theexample}{\thesection.\arabic{example}}
+\setcounter{conjecture}{0}
+\renewcommand{\theconjecture}{\thesection.\arabic{conjecture}}
+
+%% OSM Title Page
+\begin{center}
+{\Large\bfseries Online Supplemental Materials}\\[1em]
+{\large A Bayesian Hierarchical Hurdle Beta-Binomial Model for\\
+Survey-Weighted Bounded Counts and Its Application\\
+to Childcare Enrollment}\\[1.5em]
+{\normalsize JoonHo Lee}
+\end{center}
+
+\vspace{2em}
+
+%% OSM Table of Contents
+\startcontents[appendices]
+\printcontents[appendices]{}{1}{\textbf{Contents}\vskip1em\hrule\vskip1em}
+\vskip1em\hrule\vskip2em
+
+\addcontentsline{toc}{section}{Online Supplemental Materials}
+
+%% ---------------------------------------------------------------------------
+%% OSM BODY (5 Appendices: A-E)
+%% ---------------------------------------------------------------------------
+\input{osm_body}
+
+%% ===========================================================================
+%% END OF DOCUMENT
+%% ===========================================================================
+
+\end{document}

@@ -1,0 +1,232 @@
+%% =============================================================================
+%% sm_b1_scores.tex — SM-B, Subsection B.1: Score Functions
+%% Body content only (\subsection level); parent structure in sm_b.tex
+%% Primary source: dev/log/03_research-notes-deep-mathematical-properties.qmd
+%%   lines 620--689 (extensive/intensive scores, Fisher information)
+%% Corrections applied: T1-2 (truncated mu-score sign: + -> -)
+%% =============================================================================
+
+\subsection{Score functions}
+\label{smb:scores}
+
+We derive the score functions for each component of the hurdle
+beta-binomial log-likelihood.  These expressions serve three roles:
+\textup{(i)}~verification of the automatic differentiation gradients
+used in Stan~\citep{CarpenterEtAl2017}, \textup{(ii)}~diagnostics via
+score magnitude monitoring,
+and \textup{(iii)}~the theoretical basis for the sandwich variance
+estimator~\citep{Binder1983} in~\cref{app:survey}.
+Recall the parameterization $a = \mu\kappa$, $b = (1-\mu)\kappa$, the
+zero probability $p_0$ from~\eqref{eq:p0}, and the auxiliary quantities
+$\Lambda$, $\Lambda_2$ defined in~\cref{sma:eq-Lambda}.
+
+%% ---------------------------------------------------------------------------
+%%  B.1.1  Extensive-margin score
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Extensive-margin score]
+\label{smb:prop-score-ext}
+  The score of the extensive-margin log-likelihood
+  $\ell_i^{(1)} = z_i\log q_i + (1-z_i)\log(1-q_i)$ with respect to
+  the linear predictor
+  $\eta_i^{(1)} = \bx_i^\t\balpha + \bx_i^{(r)\t}\bdelta_{1,s}$ is
+  \begin{equation}\label{smb:eq-score-ext}
+    \frac{\partial\ell_i^{(1)}}{\partial\eta_i^{(1)}}
+    = z_i - q_i,
+  \end{equation}
+  where $q_i = \expit(\eta_i^{(1)})$.  The Hessian is non-random:
+  \begin{equation}\label{smb:eq-hess-ext}
+    \frac{\partial^2\ell_i^{(1)}}{\partial(\eta_i^{(1)})^2}
+    = -\,q_i(1-q_i).
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  Standard logistic regression calculus.  Since
+  $\partial q_i/\partial\eta_i^{(1)} = q_i(1-q_i)$,
+  differentiating $\ell_i^{(1)}$ yields
+  $z_i/q_i \cdot q_i(1-q_i) - (1-z_i)/(1-q_i) \cdot q_i(1-q_i)
+  = z_i(1-q_i) - (1-z_i)q_i = z_i - q_i$.
+  The second derivative is $-q_i(1-q_i)$, which depends only on
+  parameters and is therefore non-random.
+\end{proof}
+
+\begin{remark}\label{smb:rem-ext-info}
+  The non-randomness of~\eqref{smb:eq-hess-ext} implies that the
+  observed and expected Fisher information coincide for the extensive
+  margin:
+  $\cl{I}_{\textup{ext},i} = q_i(1-q_i)$.
+  This simplifies the sandwich estimator, since the Hessian bread matrix
+  for Part~1 contains no stochastic terms.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  B.1.2  Intensive-margin score for mu
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Intensive-margin score for $\mu$]
+\label{smb:prop-score-mu}
+  Define the (untruncated) beta-binomial score function
+  \citep[following the parameterization of][]{Prentice1986}
+  \begin{equation}\label{smb:eq-Sbb}
+    S_{\textup{BB}}(y;\, \mu,\kappa,n)
+    = \kappa\bigl[\psi(y+a) - \psi(n-y+b) - \psi(a) + \psi(b)\bigr],
+  \end{equation}
+  where $\psi(\cdot)$ is the digamma function and $a = \mu\kappa$,
+  $b = (1-\mu)\kappa$.  The score of the zero-truncated
+  log-likelihood\/ $\ell_i^{(2+)} = \log f_{\textup{BB}}(y_i)
+  - \log(1-p_{0,i})$ with respect to $\mu$ is
+  \begin{equation}\label{smb:eq-score-mu}
+    \boxed{%
+      \frac{\partial\ell_i^{(2+)}}{\partial\mu}
+      = S_{\textup{BB}}(y_i)
+        \;-\; \frac{p_{0,i}\,\Lambda_i}{1-p_{0,i}}
+    }.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  The decomposition $\ell_i^{(2+)} = \log f_{\textup{BB}}(y_i)
+  - \log(1-p_{0,i})$ gives two terms.
+
+  \medskip\noindent\textit{Term~1 (BB score).}\enspace
+  Using $\partial a/\partial\mu = \kappa$ and
+  $\partial b/\partial\mu = -\kappa$, differentiation of the
+  beta-binomial log-PMF yields
+  \[
+    \frac{\partial\log f_{\textup{BB}}}{\partial\mu}
+    = \kappa\bigl[\psi(y+a) - \psi(n-y+b) - \psi(a) + \psi(b)\bigr]
+    = S_{\textup{BB}}(y).
+  \]
+
+  \medskip\noindent\textit{Term~2 (truncation correction).}\enspace
+  Since $\ln p_0 = \sum_{j=0}^{n-1}\ln[(1-\mu)\kappa + j]
+  - \ln[\kappa + j]$, we have $\partial p_0/\partial\mu = -p_0\Lambda$
+  (see~\cref{sma:eq-Lambda}), and therefore
+  \[
+    \frac{\partial\log(1-p_0)}{\partial\mu}
+    = \frac{p_0\,\Lambda}{1-p_0}
+    > 0.
+  \]
+  Combining, $\partial\ell^{(2+)}/\partial\mu
+  = S_{\textup{BB}}(y) - p_0\Lambda/(1-p_0)$.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  B.1.3  Score for log kappa
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Score for $\log\kappa$]
+\label{smb:prop-score-kappa}
+  The score of the zero-truncated log-likelihood with respect to the
+  log-dispersion parameter is
+  \begin{equation}\label{smb:eq-score-kappa}
+    \boxed{%
+    \begin{aligned}
+      \frac{\partial\ell_i^{(2+)}}{\partial\log\kappa}
+      &= \kappa\Bigl[
+           \mu\bigl[\psi(y_i\!+\!a)-\psi(a)\bigr]
+           + (1\!-\!\mu)\bigl[\psi(n_i\!-\!y_i\!+\!b)-\psi(b)\bigr]
+      \\
+      &\qquad\quad
+           + \psi(\kappa)-\psi(n_i\!+\!\kappa)
+         \Bigr]
+       - \frac{p_{0,i}\,\mu\kappa}{1-p_{0,i}}
+         \sum_{j=1}^{n_i-1}
+         \frac{j}{(b+j)(\kappa+j)}.
+    \end{aligned}
+    }
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  With $\phi = \log\kappa$ and the chain rule
+  $\partial/\partial\phi = \kappa\,\partial/\partial\kappa$, the
+  untruncated BB log-PMF gives the first line
+  via $\partial a/\partial\kappa = \mu$ and
+  $\partial b/\partial\kappa = 1-\mu$.  The truncation correction
+  requires $\partial\log(1-p_0)/\partial\log\kappa$.  Writing
+  $\ln p_0 = \sum_{j=0}^{n-1}\ln(b+j) - \ln(\kappa+j)$ and
+  differentiating with respect to $\kappa$ (noting
+  $\partial b/\partial\kappa = 1-\mu$) yields the second line after
+  rearranging the telescoping sums.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  B.1.4  Expected Fisher information for mu
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Expected information for $\mu$]
+\label{smb:prop-info-mu}
+  The negative expected second derivative of the zero-truncated
+  log-likelihood with respect to $\mu$ is
+  \begin{multline}\label{smb:eq-info-mu}
+    -\E_{Y|Y>0}\!\left[
+      \frac{\partial^2\ell^{(2+)}}{\partial\mu^2}
+    \right]
+    = \frac{\kappa^2}{1-p_0}\,
+      \E_{Y\sim\BetaBin}\bigl[\psi_1(Y+a) + \psi_1(n\!-\!Y+b)\bigr] \\
+      - \kappa^2\bigl[\psi_1(a)+\psi_1(b)\bigr]
+      + T'(\mu),
+  \end{multline}
+  where $\psi_1(\cdot) = d\psi/dx$ is the trigamma function and
+  \begin{equation}\label{smb:eq-Tprime}
+    T'(\mu)
+    = \frac{p_0\,\Lambda_2}{1-p_0}
+      - \frac{p_0\,\Lambda^2}{(1-p_0)^2},
+    \qquad
+    \Lambda_2
+    = \kappa^2 \sum_{j=0}^{n-1}\frac{1}{(b+j)^2}.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  Differentiating the score~\eqref{smb:eq-score-mu} with respect to
+  $\mu$ produces two contributions.
+
+  \medskip\noindent\textit{The $S_{\textup{BB}}$ term.}\enspace
+  Direct differentiation gives
+  $\partial S_{\textup{BB}}/\partial\mu
+  = \kappa^2[\psi_1(y+a) + \psi_1(n-y+b) - \psi_1(a) - \psi_1(b)]$.
+
+  \medskip\noindent\textit{The truncation term.}\enspace
+  Set $T(\mu) = p_0\Lambda/(1-p_0)$.  The quotient rule with
+  $\partial p_0/\partial\mu = -p_0\Lambda$ gives
+  \begin{align*}
+    T'(\mu)
+    &= \frac{p_0(\Lambda_2 - \Lambda^2)(1-p_0)
+             - p_0^2\Lambda^2}{(1-p_0)^2}
+    = \frac{p_0\Lambda_2(1-p_0) - p_0\Lambda^2}{(1-p_0)^2} \\
+    &= \frac{p_0\,\Lambda_2}{1-p_0}
+       - \frac{p_0\,\Lambda^2}{(1-p_0)^2}.
+  \end{align*}
+
+  \medskip\noindent\textit{Expectation under truncation.}\enspace
+  Taking expectations under $Y \mid Y > 0$ and converting via the
+  identity $\E_{Y|Y>0}[g(Y)] = \E_{Y\sim\BetaBin}[g(Y)]/(1-p_0)$
+  yields~\eqref{smb:eq-info-mu}.  The non-stochastic terms
+  $-\kappa^2[\psi_1(a)+\psi_1(b)]$ and $T'(\mu)$ pass through the
+  expectation unchanged.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  B.1.5  Cross-information and information matrix structure
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Cross-information]\label{smb:rem-cross-info}
+  Both $\mu$ and $\kappa$ enter $\ell_i^{(2+)}$, so the
+  cross-information $\cl{I}_{\mu,\kappa}$ is nonzero.
+  The intensive-margin information block is
+  \begin{equation}\label{smb:eq-info-block}
+    \cl{I}_{\textup{int}+\kappa}
+    = \begin{pmatrix}
+        \cl{I}_{\textup{int}}   & \cl{I}_{\textup{int},\kappa} \\
+        \cl{I}_{\kappa,\textup{int}} & \cl{I}_{\kappa}
+      \end{pmatrix},
+  \end{equation}
+  which is not further block-diagonal.  The intensive-margin regression
+  parameters and $\kappa$ must be estimated jointly, but they are fully
+  separated from the extensive-margin parameters by the hurdle structure
+  (\cref{sec:model}).
+\end{remark}
+

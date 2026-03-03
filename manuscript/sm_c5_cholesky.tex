@@ -1,0 +1,209 @@
+%% =============================================================================
+%% sm_c5_cholesky.tex — SM-C, Subsection C.5: Cholesky Affine Transformation
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 1197--1261 (theorem proof, block-wise application, limitations)
+%% Corrections applied: T1-4 (MCMC vs design-consistent shrinkage),
+%%   T2-1 (block-wise Cholesky caveat)
+%% =============================================================================
+
+\subsection{Cholesky affine transformation}
+\label{smc:cholesky}
+
+The sandwich variance $\mathbf{V}_{\mathrm{sand}}$~\eqref{eq:V-sand}
+provides the design-consistent covariance, but the MCMC draws
+$\{\btheta^{(m)}\}_{m=1}^M$ from the pseudo-posterior have empirical
+covariance $\bSigma_{\mathrm{MCMC}} \approx \mathbf{H}_{\mathrm{obs}}^{-1}$,
+not $\mathbf{V}_{\mathrm{sand}}$.  In a frequentist setting one would simply
+report $\mathbf{V}_{\mathrm{sand}}$ as the variance estimator; in the
+Bayesian framework, we require the posterior draws themselves to have the
+correct covariance so that credible intervals are properly calibrated
+\citep{WilliamsSavitsky2021}.
+\cref{thm:cholesky} in the main text states the affine transformation
+that achieves this.  We now provide the full proof.
+
+%% ---------------------------------------------------------------------------
+%%  Proof of Theorem (thm:cholesky)
+%% ---------------------------------------------------------------------------
+
+\begin{proof}[Proof of \textup{\cref{thm:cholesky}}]
+  Define centered draws
+  $\mathbf{u}^{(m)} = \btheta^{(m)} - \hat{\btheta}$, so that
+  $\bSigma_{\mathrm{MCMC}}
+  = M^{-1}\sum_{m=1}^{M}\mathbf{u}^{(m)}(\mathbf{u}^{(m)})\t$.
+  Set
+  \begin{equation}\label{smc:eq-A}
+    \mathbf{A}
+    = \mathbf{L}_{\mathrm{sand}}\,\mathbf{L}_{\mathrm{MCMC}}^{-1},
+  \end{equation}
+  where $\mathbf{L}_{\mathrm{MCMC}}
+  = \mathrm{chol}(\bSigma_{\mathrm{MCMC}})$ and
+  $\mathbf{L}_{\mathrm{sand}}
+  = \mathrm{chol}(\mathbf{V}_{\mathrm{sand}})$ are lower-triangular
+  Cholesky factors.  The transformation~\eqref{eq:cholesky-transform} is
+  then $\btheta^{*(m)} = \hat{\btheta} + \mathbf{A}\,\mathbf{u}^{(m)}$.
+
+  \medskip\noindent
+  \textup{(a) Mean preservation.}
+  \[
+    \frac{1}{M}\sum_{m=1}^{M}\btheta^{*(m)}
+    = \hat{\btheta}
+      + \mathbf{A}\,\Bigl(\frac{1}{M}\sum_{m=1}^{M}\mathbf{u}^{(m)}\Bigr)
+    = \hat{\btheta} + \mathbf{A}\cdot\mathbf{0}
+    = \hat{\btheta}.
+  \]
+
+  \noindent
+  \textup{(b) Covariance recovery.}
+  \begin{align}
+    \frac{1}{M}\sum_{m=1}^{M}
+      (\btheta^{*(m)} - \hat{\btheta})\,
+      (\btheta^{*(m)} - \hat{\btheta})\t
+    &= \mathbf{A}\,\bSigma_{\mathrm{MCMC}}\,\mathbf{A}\t
+      \notag \\
+    &= \mathbf{L}_{\mathrm{sand}}\,
+       \mathbf{L}_{\mathrm{MCMC}}^{-1}\,
+       \mathbf{L}_{\mathrm{MCMC}}\,
+       \mathbf{L}_{\mathrm{MCMC}}\t\,
+       \mathbf{L}_{\mathrm{MCMC}}^{-\t}\,
+       \mathbf{L}_{\mathrm{sand}}\t
+      \notag \\
+    &= \mathbf{L}_{\mathrm{sand}}\,\mathbf{I}\,
+       \mathbf{L}_{\mathrm{sand}}\t
+     = \mathbf{V}_{\mathrm{sand}}.
+      \label{smc:eq-cholesky-var}
+  \end{align}
+
+  \noindent
+  \textup{(c) Affine equivariance.}
+  The standardized draws
+  $\mathbf{z}^{(m)} = \mathbf{L}_{\mathrm{MCMC}}^{-1}\mathbf{u}^{(m)}$
+  satisfy
+  \[
+    M^{-1}\sum_m \mathbf{z}^{(m)}(\mathbf{z}^{(m)})\t = \mathbf{I}.
+  \]
+  The transformation maps
+  \[
+    \btheta^{*(m)} - \hat{\btheta}
+    = \mathbf{L}_{\mathrm{sand}}\,\mathbf{z}^{(m)},
+  \]
+  which is a linear rescaling of the standardized draws.  The
+  Wald confidence intervals---computed as
+  $\hat{\theta}_p \pm z_{\alpha/2}\sqrt{[\mathbf{V}_{\mathrm{sand}}]_{pp}}$---depend
+  only on the marginal variances of~$\btheta^*$ and are therefore
+  invariant to the choice of~$\mathbf{A}$.  Marginal quantiles of
+  the transformed draws may differ from those of the original
+  draws when~$\mathbf{A}$ is non-diagonal.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  Block-wise application
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Block-wise application]
+\label{smc:rem-blockwise}
+  In practice the transformation~\eqref{eq:cholesky-transform} is applied
+  block-wise rather than to the full
+  $\approx\!616$-dimensional vector simultaneously.  The three
+  parameter classes are listed below; the numerical Cholesky procedure
+  operates on blocks~(i) and~(ii) only, since block~(iii) receives no
+  correction
+  (\cref{rem:blockwise} in the main text).  The rationale follows from
+  \cref{smc:prop-H-blockdiag} and~\cref{smc:rem-J-nonblockdiag}\textup{:}
+  \begin{enumerate}[label=\textup{(\roman*)},nosep]
+    \item \emph{Fixed effects}
+      $\boldsymbol{\xi}
+      = (\balpha\t,\bbeta\t,\log\kappa)\t \in \R^{11}$\textup{:}
+      full Cholesky correction.  The $\DER$ ranges from $1.14$ to
+      $4.18$ (mean $2.11$), and the corresponding confidence-interval
+      inflation factors are $\sqrt{\DER} \in [1.07, 2.04]$.
+    \item \emph{State random effects}
+      $\bepsilon_s \in \R^{10}$, $s = 1,\ldots,S$\textup{:} partial
+      correction.  The posterior variance of $\bepsilon_s$ mixes the
+      likelihood information from providers in state~$s$ (affected by
+      survey weights) with the shrinkage toward the prior mean
+      $\bGamma_k\mathbf{v}_s$ (unaffected).  When the prior
+      dominates (small states), $\DER_s \approx 1$ and no correction
+      is needed; when the likelihood dominates (large states),
+      $\DER_s$ can exceed~$3$ and the correction is substantial.
+    \item \emph{Hyperparameters}
+      $(\bGamma_k, \bSigma_\varepsilon)$\textup{:} no correction.
+      The sandwich estimator is not applicable to variance components
+      estimated from between-state variation; the DER concept does not
+      extend to these parameters.
+  \end{enumerate}
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  T2-1: Approximation quality of block-wise approach
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Approximation quality of the block-wise correction]
+\label{smc:rem-blockwise-quality}
+  The block-wise application ignores the cross-block covariance between
+  fixed effects $\boldsymbol{\xi}$ and random effects $\bepsilon_s$ in
+  $\mathbf{V}_{\mathrm{sand}}$.  The approximation is essentially exact
+  when the prior dominates ($\ESS_s \ll q$), since $\bepsilon_s$ is then
+  nearly independent of the data.  When data dominate ($\ESS_s \gg q$),
+  the cross-block covariance can be non-negligible; the sensitivity
+  comparison in~\cref{app:extended-results} addresses this case.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  T1-4: MCMC vs design-consistent shrinkage
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[MCMC versus design-consistent shrinkage]
+\label{smc:rem-mcmc-vs-design}
+  The shrinkage factor
+  $B_s^{(w)}
+  = \bSigma_\varepsilon(\bSigma_\varepsilon + \mathbf{V}_s^{-1})^{-1}$
+  describes the \emph{design-consistent} (post-sandwich-correction)
+  posterior behavior, not the raw MCMC pseudo-posterior.  The MCMC
+  sampler sees precision proportional to
+  $W_s = \sum_{i \in s}\tilde{w}_i$, which exceeds the effective
+  sample size $\ESS_s = W_s^2 / \sum_{i \in s}\tilde{w}_i^2$ whenever
+  within-state weights are heterogeneous.  The Cholesky affine
+  transformation~\eqref{eq:cholesky-transform} maps the MCMC output to
+  the design-consistent target, inflating the variance by the factor
+  $\DER_s$ (\cref{smc:der}).  The gap $W_s - \ESS_s$ quantifies the
+  over-concentration of the raw pseudo-posterior relative to the
+  design-aware target\textup{:} large gaps (common in states with a
+  few heavily weighted providers) signal that the naive MCMC credible
+  intervals are too narrow and that the sandwich correction is most
+  important.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  Limitations
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Non-Gaussian posterior shapes]
+\label{smc:rem-nongaussian}
+  The Cholesky transformation is an affine operation that preserves
+  only first and second moments.  If the pseudo-posterior is
+  substantially non-Gaussian (skewed or multimodal), the transformed
+  draws will have the correct covariance but may misrepresent the
+  posterior shape.  For the HBB model, the fixed effects
+  $(\balpha,\bbeta)$ are expected to be approximately Gaussian by the
+  Bernstein--von Mises result (\cref{smc:thm-bvm}) given
+  $N = 6{,}809$; the log-dispersion $\log\kappa$ is also
+  well-approximated by a normal.  For variance components
+  ($\bSigma_\varepsilon$), the posterior may exhibit right-skewness,
+  but these parameters are not subject to the Cholesky correction
+  (Block~3 above).
+\end{remark}
+
+\begin{remark}[Positive definiteness requirements]
+\label{smc:rem-posdef}
+  The transformation requires both $\bSigma_{\mathrm{MCMC}}$ and
+  $\mathbf{V}_{\mathrm{sand}}$ to be positive definite so that their
+  Cholesky factors exist.  For $\bSigma_{\mathrm{MCMC}}$, positive
+  definiteness holds almost surely when the number of MCMC draws
+  satisfies $M \gg \dim(\boldsymbol{\xi}) = 11$; in our application
+  $M = 4{,}000$ post-warmup draws.  For
+  $\mathbf{V}_{\mathrm{sand}}$, positive definiteness requires the
+  effective degrees of freedom to exceed the parameter dimension:
+  $\sum_{h=1}^{H}(C_h - 1) = 386 > 11$ (\cref{smc:rem-dof}), which
+  is easily satisfied.
+\end{remark}

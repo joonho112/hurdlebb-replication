@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\caption{Recovery of the cross-margin correlation $\rho_{\mathrm{cross}} = \operatorname{cor}(\delta_j^{\mathrm{ext}}, \delta_j^{\mathrm{int}})$
+  across $R = 200$ simulation replications. The plug-in estimator 
+  $\hat{\rho} = \operatorname{cor}(\bar{\delta}_j^{\mathrm{ext}}, \bar{\delta}_j^{\mathrm{int}})$
+  uses posterior mean random effects ($S = 51$ states). True value: $\rho_{\mathrm{cross}} = 0.2853$.
+  E\textsubscript{WS} is identical to E\textsubscript{WT} because the sandwich correction applies only to fixed effects.}
+\label{tab:rho-cross-sim}
+\smallskip
+\small
+\begin{tabular}{@{}ll rrrrr@{}}
+\toprule
+Scenario & Estimator & $\overline{\hat{\rho}}$ & Bias & Rel.~Bias (\%) & RMSE & Emp.~SE \\
+\midrule
+S0 (Baseline)      & E\textsubscript{UW}                 & 0.5238 & $+0.2386$ & $+83.6$ & 0.2990 & 0.1807 \\
+                   & E\textsubscript{WT}                 & 0.2104 & $-0.0749$ & $-26.3$ & 0.2294 & 0.2173 \\
+                   & E\textsubscript{WS}$^{\dagger}$     & 0.2104 & $-0.0749$ & $-26.3$ & 0.2294 & 0.2173 \\
+\midrule
+S3 (NSECE)         & E\textsubscript{UW}                 & 0.5814 & $+0.2961$ & $+103.8$ & 0.3643 & 0.2128 \\
+                   & E\textsubscript{WT}                 & 0.1658 & $-0.1195$ & $-41.9$ & 0.2256 & 0.1918 \\
+                   & E\textsubscript{WS}$^{\dagger}$     & 0.1658 & $-0.1195$ & $-41.9$ & 0.2256 & 0.1918 \\
+\midrule
+S4 (Heavy-tail)    & E\textsubscript{UW}                 & 0.6468 & $+0.3615$ & $+126.7$ & 0.4075 & 0.1886 \\
+                   & E\textsubscript{WT}                 & 0.1579 & $-0.1274$ & $-44.7$ & 0.2372 & 0.2005 \\
+                   & E\textsubscript{WS}$^{\dagger}$     & 0.1579 & $-0.1274$ & $-44.7$ & 0.2372 & 0.2005 \\
+\bottomrule
+\end{tabular}
+
+\medskip
+{\footnotesize $^{\dagger}$E\textsubscript{WS} shares the same Stan fit as E\textsubscript{WT}; the Cholesky sandwich correction adjusts only fixed-effect covariances, not hyperparameter posteriors.}
+\end{table}

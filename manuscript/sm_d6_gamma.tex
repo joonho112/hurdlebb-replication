@@ -1,0 +1,107 @@
+%% =============================================================================
+%% sm_d6_gamma.tex — SM-D, Subsection D.6: Full Policy Moderation Parameters
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%% Source: ST3_gamma_full (R-generated, reformatted)
+%% =============================================================================
+
+\subsection{Full policy moderation parameters}
+\label{smd:gamma}
+
+\Cref{smd:tab-gamma} presents the complete set of $40$ elements of the
+cross-level moderation matrices $\bGamma_1$ (extensive margin) and
+$\bGamma_2$ (intensive margin) from the weighted M3b model.  The main
+text (\cref{sec:policyresults}) summarizes three key patterns; here we
+provide the full matrices for all $5$~covariates $\times$
+$4$~policy dimensions $\times$ $2$~margins.
+
+The four policy dimensions are: (i)~market rate percentile
+(MR\_pctile\_std, standardized), measuring how generous each state's
+reimbursement rate is relative to provider market rates;
+(ii)~TieredReim, an indicator for states with tiered reimbursement
+quality systems; (iii)~ITaddon, an indicator for states offering
+additional subsidies for infant/toddler care; and (iv)~the intercept
+column, capturing residual cross-state variation unrelated to the
+three measured policies (the intercept column of $\bGamma_k$
+is softly identified by its prior; see \cref{sec:priors}).
+
+Two patterns merit attention beyond those highlighted in the main text.
+First, the IT~addon variable shows the most consistent effects across
+both margins: it is positively associated with the extensive-margin
+intercept ($\gamma = 0.728$, $\Pr(>0) = 0.996$) and the
+extensive-margin Hispanic coefficient ($\gamma = 0.750$,
+$\Pr(>0) = 0.999$), while being strongly negatively associated with
+the extensive-margin poverty coefficient ($\gamma = -0.488$,
+$\Pr(>0) = 0.018$).  On the intensive margin, the IT~addon is
+associated with a notably higher Black coefficient ($\gamma = 0.256$,
+$\Pr(>0) = 1.000$).
+
+Second, the intercept columns for both margins have wide
+posteriors (SD~$\approx 0.93$), confirming the soft
+identification: the hierarchical prior
+($\Norm(0, 0.5^2)$ for the intercept column, tighter than the
+$\Norm(0, 1^2)$ for policy columns) constrains these parameters
+without driving them to zero.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}lll rrrr r@{}}
+  \toprule
+  Margin & Covariate & Policy & Mean & SD & Q025 & Q975 & $\Pr({>}0)$ \\
+  \midrule
+  \multicolumn{8}{@{}l}{\emph{Extensive margin} ($\bGamma_1$)} \\[2pt]
+  ext & intercept & intercept & 0.127 & 0.937 & $-$1.684 & 1.960 & 0.558 \\
+  ext & intercept & MR\_pctile & 0.018 & 0.142 & $-$0.268 & 0.297 & 0.543 \\
+  ext & intercept & TieredReim & $-$0.413 & 0.359 & $-$1.121 & 0.278 & 0.128 \\
+  ext & intercept & ITaddon & 0.728 & 0.285 & 0.182 & 1.297 & 0.996 \\[2pt]
+  ext & poverty & intercept & $-$0.044 & 0.933 & $-$1.845 & 1.789 & 0.483 \\
+  ext & poverty & MR\_pctile & 0.064 & 0.107 & $-$0.152 & 0.271 & 0.732 \\
+  ext & poverty & TieredReim & 0.495 & 0.272 & $-$0.064 & 1.021 & 0.962 \\
+  ext & poverty & ITaddon & $-$0.488 & 0.225 & $-$0.917 & $-$0.035 & 0.018 \\[2pt]
+  ext & urban & intercept & 0.073 & 0.945 & $-$1.766 & 1.886 & 0.531 \\
+  ext & urban & MR\_pctile & 0.011 & 0.062 & $-$0.112 & 0.129 & 0.574 \\
+  ext & urban & TieredReim & $-$0.248 & 0.175 & $-$0.601 & 0.094 & 0.076 \\
+  ext & urban & ITaddon & $-$0.205 & 0.146 & $-$0.488 & 0.087 & 0.072 \\[2pt]
+  ext & black & intercept & 0.085 & 0.929 & $-$1.740 & 1.927 & 0.530 \\
+  ext & black & MR\_pctile & $-$0.283 & 0.144 & $-$0.565 & 0.010 & 0.026 \\
+  ext & black & TieredReim & $-$0.652 & 0.339 & $-$1.346 & 0.014 & 0.029 \\
+  ext & black & ITaddon & 0.365 & 0.276 & $-$0.193 & 0.890 & 0.910 \\[2pt]
+  ext & hispanic & intercept & 0.012 & 0.925 & $-$1.799 & 1.850 & 0.509 \\
+  ext & hispanic & MR\_pctile & 0.072 & 0.134 & $-$0.198 & 0.331 & 0.712 \\
+  ext & hispanic & TieredReim & $-$0.351 & 0.350 & $-$1.052 & 0.318 & 0.157 \\
+  ext & hispanic & ITaddon & 0.750 & 0.259 & 0.260 & 1.290 & 0.999 \\
+  \midrule
+  \multicolumn{8}{@{}l}{\emph{Intensive margin} ($\bGamma_2$)} \\[2pt]
+  int & intercept & intercept & $-$0.074 & 0.922 & $-$1.899 & 1.735 & 0.468 \\
+  int & intercept & MR\_pctile & $-$0.024 & 0.039 & $-$0.104 & 0.052 & 0.265 \\
+  int & intercept & TieredReim & 0.271 & 0.120 & 0.026 & 0.497 & 0.985 \\
+  int & intercept & ITaddon & 0.001 & 0.084 & $-$0.158 & 0.173 & 0.488 \\[2pt]
+  int & poverty & intercept & 0.019 & 0.935 & $-$1.783 & 1.831 & 0.505 \\
+  int & poverty & MR\_pctile & 0.028 & 0.026 & $-$0.024 & 0.079 & 0.865 \\
+  int & poverty & TieredReim & $-$0.064 & 0.064 & $-$0.193 & 0.060 & 0.156 \\
+  int & poverty & ITaddon & $-$0.087 & 0.051 & $-$0.187 & 0.014 & 0.041 \\[2pt]
+  int & urban & intercept & $-$0.015 & 0.932 & $-$1.821 & 1.783 & 0.497 \\
+  int & urban & MR\_pctile & 0.027 & 0.017 & $-$0.007 & 0.060 & 0.941 \\
+  int & urban & TieredReim & 0.015 & 0.054 & $-$0.090 & 0.122 & 0.612 \\
+  int & urban & ITaddon & 0.039 & 0.040 & $-$0.035 & 0.120 & 0.837 \\[2pt]
+  int & black & intercept & 0.029 & 0.912 & $-$1.731 & 1.848 & 0.503 \\
+  int & black & MR\_pctile & 0.015 & 0.036 & $-$0.056 & 0.082 & 0.662 \\
+  int & black & TieredReim & 0.047 & 0.088 & $-$0.126 & 0.224 & 0.706 \\
+  int & black & ITaddon & 0.256 & 0.072 & 0.117 & 0.397 & 1.000 \\[2pt]
+  int & hispanic & intercept & $-$0.045 & 0.936 & $-$1.853 & 1.811 & 0.482 \\
+  int & hispanic & MR\_pctile & $-$0.115 & 0.054 & $-$0.224 & $-$0.010 & 0.016 \\
+  int & hispanic & TieredReim & 0.227 & 0.164 & $-$0.088 & 0.554 & 0.920 \\
+  int & hispanic & ITaddon & $-$0.135 & 0.108 & $-$0.349 & 0.077 & 0.104 \\
+  \bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{Complete policy moderation parameters (weighted M3b, all
+  $40$~elements of $\bGamma_1$ and $\bGamma_2$).  Each row reports the
+  posterior mean, standard deviation, 95\% credible interval, and
+  posterior probability of a positive effect.  The main text
+  (\cref{sec:policyresults}) summarizes three key
+  patterns; bold findings correspond to $\Pr({>}0) > 0.95$ or
+  $\Pr({>}0) < 0.05$.}
+\label{smd:tab-gamma}
+\end{table}

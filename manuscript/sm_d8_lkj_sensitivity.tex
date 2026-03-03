@@ -1,0 +1,58 @@
+%% =============================================================================
+%% sm_d8_lkj_sensitivity.tex — SM-D.6: LKJ Prior Sensitivity Analysis
+%% =============================================================================
+
+\subsection{LKJ prior sensitivity}
+\label{smd:lkj-sensitivity}
+
+To assess sensitivity to the LKJ prior on the $10 \times 10$
+random-effect correlation matrix~$\Omega$, we refit M3b-W under
+seven concentration parameters
+$\eta \in \{1.0,\, 1.5,\, 2.0,\, 3.0,\, 4.0,\, 6.0,\, 8.0\}$.
+The baseline specification uses $\eta = 2$, which places a weakly
+regularizing distribution favoring moderate correlations; $\eta = 1$
+yields a uniform distribution over correlation matrices, while higher
+values concentrate mass near the identity.
+
+\cref{tab:lkj-sensitivity} reports posterior summaries for the
+cross-margin correlation $\rho_{\mathrm{cross}} = \Omega_{1,6}$,
+the poverty coefficients ($\alpha_{\mathrm{pov}}$, $\beta_{\mathrm{pov}}$),
+and the intercept random-effect standard deviations
+($\tau_1^{\mathrm{ext}}$, $\tau_1^{\mathrm{int}}$).
+Across the sevenfold range of~$\eta$, $\hat{\rho}_{\mathrm{cross}}$
+varies between $0.097$ and $0.191$, remaining near zero throughout
+and well within the posterior uncertainty of any single specification.
+The 95\% credible interval includes zero in every case.
+The poverty coefficients are equally stable:
+$\alpha_{\mathrm{pov}} \in [-0.359,\, -0.310]$ and
+$\beta_{\mathrm{pov}} \in [0.074,\, 0.132]$,
+confirming that the sign reversal is robust to the LKJ prior.
+
+LOO-CV model fit is nearly identical across specifications
+(ELPD spread ${}<5$), with all MCMC diagnostics satisfactory
+(the single marginal R-hat exceedance at $\eta = 6$ is $1.011$,
+well within practical tolerance).
+
+\cref{smd:fig-lkj-density} overlays the posterior densities of
+$\rho_{\mathrm{cross}}$ across all seven specifications.  The
+densities are nearly superimposed, confirming that the data
+dominate the prior for this parameter despite the moderate
+cluster size ($S = 51$).
+
+These results confirm that the near-zero cross-margin correlation
+and the poverty reversal pattern are data-driven findings,
+not artifacts of the LKJ(2) prior specification.
+
+\input{Figures/ST_lkj_sensitivity}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{SF_lkj_rho_density.pdf}
+  \caption{Posterior density of the cross-margin correlation
+    $\rho_{\mathrm{cross}} = \Omega_{1,6}$ under seven LKJ
+    concentration parameters $\eta \in \{1, 1.5, 2, 3, 4, 6, 8\}$.
+    The densities are nearly superimposed, indicating that the
+    posterior is data-dominated rather than prior-driven.
+    The vertical dashed line marks zero.}
+  \label{smd:fig-lkj-density}
+\end{figure}

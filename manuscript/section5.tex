@@ -1,0 +1,493 @@
+%% =============================================================================
+%% section5.tex — Section 5: Application to NSECE Childcare Data
+%% =============================================================================
+
+\section{Application to NSECE Childcare Data}\label{sec:application}
+
+We now apply the full analytical pipeline developed in \cref{sec:model} to
+the 2019 NSECE data described in \cref{sec:data}, demonstrating each
+methodological component in a realistic survey setting. The simulation
+evidence in \cref{sec:simulation} established that the sandwich correction
+substantially improves frequentist coverage and that the DER diagnostic reliably
+identifies parameters affected by informative sampling; the present
+application illustrates these tools in practice. The analysis proceeds in
+five parts: model comparison via LOO-CV (\cref{sec:modelcomp}),
+population-average inference with the two-track reporting strategy and DER
+diagnostic (\cref{sec:popavg}), state-specific heterogeneity and
+cross-margin independence (\cref{sec:statevar}), marginal effect
+decomposition (\cref{sec:ame}), and a brief examination of policy
+moderation (\cref{sec:policyresults}). Together, these subsections showcase
+the three methodological contributions: the two-track reporting strategy
+that resolves prior domination, the DER diagnostic that quantifies
+parameter-specific design effects, and the marginal effect decomposition
+that translates hurdle model coefficients into policy-relevant quantities.
+
+%% ---------------------------------------------------------------------------
+%% 5.1 Model Comparison and Selection
+%% ---------------------------------------------------------------------------
+
+\subsection{Model comparison and selection}\label{sec:modelcomp}
+
+We fit the five nested models summarized in~\cref{tab:model-hierarchy}---from
+the pooled M0 to the full M3b with policy moderators---using the estimation
+pipeline described in~\cref{alg:estimation}, implemented in Stan
+\citep{CarpenterEtAl2017}. Each model is estimated with 4
+chains of 3,500 iterations (1,500 warmup + 2,000 sampling), yielding 8,000
+post-warmup draws per parameter.
+
+\paragraph{Convergence.}
+All five models satisfy standard diagnostics~\citep{Vehtari2021}:
+$\hat{R} < 1.01$ for every monitored parameter, minimum bulk effective
+sample size exceeds 400, and zero divergent transitions were recorded.
+\cref{tab:convergence-summary} summarizes these statistics; the
+non-centered parameterization~\citep{BetancourtGirolami2015} successfully
+eliminates the funnel geometry. Full parameter-by-parameter diagnostics
+appear in Supplementary Material~E.
+
+\begin{table}[t]
+\centering
+\caption{Convergence diagnostics across all models. $\hat{R}_{\max}$ is the
+  maximum potential scale reduction factor across all monitored parameters.
+  $\ESS_{\min}$ reports the minimum bulk and tail effective sample sizes.
+  All models achieve the recommended thresholds ($\hat{R} < 1.01$,
+  $\ESS > 400$, zero divergences).}\label{tab:convergence-summary}
+\smallskip
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Model & $\hat{R}_{\max}$ & $\ESS_{\min}^{\mathrm{bulk}}$
+  & $\ESS_{\min}^{\mathrm{tail}}$ & Divergences \\
+\midrule
+M0: Pooled         & 1.001 & 3{,}390 & 2{,}679 & 0 \\
+M1: Random int.\   & 1.004 &    815  & 1{,}415 & 0 \\
+M2: Block-diag.\ SVC & 1.004 & 1{,}078 & 1{,}244 & 0 \\
+M3a: Cross-margin  & 1.004 & 1{,}385 & 1{,}257 & 0 \\
+M3b: Policy mod.\  & 1.004 & 1{,}245 & 1{,}463 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{LOO-CV comparison.}
+We compare models using Pareto-smoothed importance-sampling leave-one-out
+cross-validation~\citep[\LOO-CV;][]{VehtariEtAl2017}, where ``leave-one-out''
+refers to individual providers, not entire states.
+The pointwise log-likelihood for each provider~$i$ includes both hurdle
+components: the extensive-margin (Bernoulli) log-likelihood always
+contributes, and the intensive-margin (zero-truncated beta-binomial)
+log-likelihood contributes only for participants ($z_i = 1$).
+\cref{tab:loo} presents the expected log pointwise predictive density
+($\widehat{\elpd}_{\LOO}$) for each model.
+For the survey-weighted specification M3b-W, the LOO computation uses the
+unweighted nominal log-likelihood, because the pseudo-log-likelihood is not
+a proper predictive density; the comparisons thus rank models on their
+nominal predictive ability.
+Because LOO-CV operates at the provider level while many inferential
+targets are state-level parameters, the LOO ranking should be interpreted
+as a guide to observation-level fit rather than a direct assessment of
+state-level inference quality.
+The progression reveals
+diminishing returns: adding state random intercepts (M0$\to$M1) yields a
+decisive improvement ($\Delta\widehat{\elpd} = +317.8$, SE $= 25.9$,
+exceeding 12 standard errors), and allowing state-varying coefficients
+(M1$\to$M2) provides a further significant gain ($+23.6$ incrementally).
+Introducing the cross-margin covariance (M2$\to$M3a) does not improve
+predictive performance ($\Delta\widehat{\elpd} < 2$), consistent with the
+near-zero empirical cross-margin correlation and with
+\cref{prop:sigma12-nonid}: since $\bSigma_{12}$ receives no likelihood
+information, its value lies in inference rather than prediction. Adding
+policy moderators (M3a$\to$M3b) likewise produces no predictive gain; the
+$\bGamma$ matrices redistribute the sources of state heterogeneity without
+changing the provider-level predictive distribution.
+
+\begin{table}[t]
+\centering
+\caption{Leave-one-out cross-validation comparison for models M0--M3b.
+  $\widehat{\elpd}_{\LOO}$ is the expected log pointwise predictive density
+  estimated via Pareto-smoothed importance sampling
+  \citep{VehtariEtAl2017}; $\Delta\widehat{\elpd} = \widehat{\elpd}_{\mathrm{M0}} - \widehat{\elpd}_{\mathrm{M}_j}$ measures the
+  predictive gain over M0 (more negative indicates better prediction); SE($\Delta$) is the standard
+  error of the difference. A model improvement is flagged as significant
+  when $|\Delta\widehat{\elpd}| > 2 \times \mathrm{SE}(\Delta)$.
+  All Pareto-$k$ diagnostics are below 0.7.}\label{tab:loo}
+\smallskip
+\begin{tabular}{@{}lrcrrrc@{}}
+\toprule
+Model & Params & $\widehat{\elpd}_{\LOO}$ & SE &
+  $\Delta\widehat{\elpd}$ & SE($\Delta$) & Sig.\ \\
+\midrule
+M0: Pooled          &  11 & $-20{,}945.0$ & 140.3 &
+  ---   & ---  & ---    \\
+M1: Random int.\    & 116 & $-20{,}627.2$ & 144.0 &
+  $-317.8$ & 25.9 & Yes \\
+M2: Block-diag.\ SVC & 551 & $-20{,}603.5$ & 144.4 &
+  $-341.4$ & 27.6 & Yes \\
+M3a: Cross-margin   & 576 & $-20{,}601.6$ & 144.4 &
+  $-343.4$ & 27.6 & No  \\
+M3b: Policy mod.\   & 616 & $-20{,}607.6$ & 144.6 &
+  $-337.3$ & 28.5 & No  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Model selection rationale.}
+We adopt M3b as the reporting model despite its equivalent predictive
+performance to M2 and M3a. The cross-margin covariance $\bSigma_{12}$
+enables joint posterior statements about the reversal (e.g.,
+$\Pr(\tilde{\alpha}_{\mathrm{pov},s} < 0$ and
+$\tilde{\beta}_{\mathrm{pov},s} > 0 \mid \mathrm{data})$), and the policy
+moderators provide the decomposition of state heterogeneity into
+policy-explained and residual components (\cref{prop:poverty-expansion}).
+The non-significant LOO-CV differences confirm that this additional
+structure incurs no predictive cost. Posterior predictive checks confirm
+that M3b reproduces both the observed zero rate (35.3\%) and the
+distribution of IT shares among servers; details appear in Supplementary
+Material~D.
+
+%% ---------------------------------------------------------------------------
+%% 5.2 Population-Average Effects and the Sandwich Correction
+%% ---------------------------------------------------------------------------
+
+\subsection{Population-average effects and the sandwich correction}\label{sec:popavg}
+
+\cref{tab:fixed-effects} reports the posterior means, naive 95\% credible
+intervals (from the raw MCMC output), sandwich-corrected 95\% Wald confidence
+intervals, and design effect ratios (DER) for all 11 fixed-effect parameters.
+Of the 11 parameters, 9 are statistically significant at the 95\% level
+under the sandwich correction; the two exceptions are
+$\alpha_{\mathrm{Hisp}}$ (extensive-margin Hispanic coefficient, Wald CI
+$[-0.095, 0.106]$) and $\beta_{\mathrm{Black}}$ (intensive-margin Black
+coefficient, Wald CI $[-0.052, 0.019]$).
+
+\begin{table}[t]
+\centering
+\caption{Population-average fixed effect estimates from weighted M3b.
+  ``Post.\ Mean'' is the posterior mean from the pseudo-posterior. ``Naive
+  95\% CI'' is the 2.5th--97.5th percentile interval from the uncorrected
+  MCMC posterior. ``Wald 95\% CI'' uses the sandwich-corrected variance
+  (\cref{thm:cholesky}). ``DER'' is the design effect ratio
+  (\cref{eq:der}). Asterisks indicate significance at the 5\% level
+  under the Wald test. All covariates are standardized.}\label{tab:fixed-effects}
+\smallskip
+\small
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}lrll r@{}}
+\toprule
+Parameter & Post.\ Mean & Naive 95\% CI & Wald 95\% CI & DER \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Extensive margin ($\balpha$)}} \\[2pt]
+Intercept           & $0.764$  & $[-1.109,\; 2.628]$ & $[0.677,\; 0.851]^{*}$  & 2.04 \\
+Poverty             & $-0.324$ & $[-2.205,\; 1.497]$ & $[-0.426,\; -0.221]^{*}$ & 2.41 \\
+Urban               & $0.442$  & $[-1.387,\; 2.224]$ & $[0.375,\; 0.509]^{*}$  & 4.18 \\
+Black               & $0.478$  & $[-1.459,\; 2.405]$ & $[0.392,\; 0.565]^{*}$  & 1.54 \\
+Hispanic            & $0.006$  & $[-1.902,\; 1.903]$ & $[-0.095,\; 0.106]$     & 1.82 \\[4pt]
+\multicolumn{5}{@{}l}{\textit{Intensive margin ($\bbeta$)}} \\[2pt]
+Intercept           & $-0.242$ & $[-2.058,\; 1.587]$ & $[-0.272,\; -0.213]^{*}$ & 1.36 \\
+Poverty             & $0.090$  & $[-1.713,\; 1.904]$ & $[0.053,\; 0.127]^{*}$  & 1.61 \\
+Urban               & $-0.047$ & $[-1.858,\; 1.768]$ & $[-0.087,\; -0.007]^{*}$ & 3.18 \\
+Black               & $-0.017$ & $[-1.851,\; 1.760]$ & $[-0.052,\; 0.019]$     & 1.38 \\
+Hispanic            & $-0.097$ & $[-1.974,\; 1.716]$ & $[-0.130,\; -0.064]^{*}$ & 1.14 \\[4pt]
+\multicolumn{5}{@{}l}{\textit{Overdispersion}} \\[2pt]
+$\log\kappa$        & $1.919$  & $[1.866,\; 1.972]$ & $[1.861,\; 1.976]^{*}$   & 2.58 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+\paragraph{Impact of survey weighting.}
+\cref{tab:m3b-comparison} places the weighted (M3b-W) and unweighted
+(M3b) posterior means side by side.  Weighting shifts every
+fixed-effect estimate, with a median displacement of 5.2 sandwich
+standard errors, yet preserves all substantively important sign
+patterns---most critically, the poverty reversal
+($\alpha_{\mathrm{pov}} < 0$, $\beta_{\mathrm{pov}} > 0$) is present in
+both specifications.  Three coefficients change sign
+($\alpha_{\mathrm{Hispanic}}$, $\beta_{\mathrm{Black}}$,
+$\beta_{\mathrm{Hispanic}}$), but the two intensive-margin sign changes
+involve parameters whose Wald confidence intervals include zero, so the
+sign itself is not statistically determined.  Overall, the comparison
+confirms that the NSECE sampling design materially affects
+point estimates---justifying the pseudo-posterior approach---while
+leaving the central empirical findings intact.
+
+\input{Figures/T_m3b_comparison.tex}
+
+\paragraph{The poverty reversal.}
+The reversal is the central empirical finding. The extensive-margin
+poverty coefficient is $\hat{\alpha}_{\mathrm{pov}} = -0.324$ (Wald 95\% CI:
+$[-0.426, -0.221]$; $\DER = 2.41$): a one-standard-deviation increase in
+community poverty (approximately 8.3 percentage points) reduces the log-odds
+of serving infants by 0.324. The intensive-margin poverty coefficient is
+$\hat{\beta}_{\mathrm{pov}} = +0.090$ (Wald 95\% CI:
+$[+0.053, +0.127]$; $\DER = 1.61$): among centers that clear the hurdle,
+the same poverty increase raises the logit IT share by 0.090. Both intervals
+exclude zero, the signs are firmly opposed, and the posterior probability
+that the reversal holds at the population average is
+$\Pr(\alpha_{\mathrm{pov}} < 0 \text{ and } \beta_{\mathrm{pov}} > 0
+\mid \text{data}) = 1.000$,
+computed from the sandwich-corrected posterior draws
+(the binding margin, $\beta_{\mathrm{pov}}$, lies $4.8$
+sandwich standard deviations from zero; a bivariate normal
+approximation gives a complementary probability of order~$10^{-6}$).
+
+\paragraph{Naive versus Wald intervals: resolving prior domination.}
+The contrast between the naive and Wald intervals in
+\cref{tab:fixed-effects} provides a clear empirical demonstration of
+the prior domination phenomenon. The naive
+credible intervals for $\balpha$ and $\bbeta$ span approximately 3.7 units
+on the logit scale---wide enough to include both positive and negative values
+for every parameter, rendering significance testing impossible. The Wald
+intervals, by contrast, are 0.06--0.21 units wide and permit clear
+inferences.
+
+This discrepancy arises because the naive posterior of the population-average
+coefficients is dominated by the prior rather than the data. In the
+hierarchical model, the state random effects $\bdelta_{k,s}$ absorb nearly
+all data information about the state-specific coefficients
+$\tilde{\alpha}_{k,s} = \alpha_k + \delta_{k,s}$
+\citep[cf.][]{RabeHeskethSkrondal2006}; the population-average
+$\alpha_k$ is identified only through the random effects distribution, with
+an effective sample size of $S = 51$ (the number of states) rather than
+$N = 6{,}785$ (the number of providers). Consequently, the marginal
+posterior variance $[\bSigma_{\mathrm{MCMC}}]_{pp}$ remains close to the
+prior variance rather than converging to the data-informed precision
+$[\mathbf{H}_{\mathrm{obs}}^{-1}]_{pp}$. The hierarchical variance
+ratio---the ratio of MCMC posterior variance to observed-information
+variance---exceeds 600 for all fixed effects (see the computational remark
+in~\cref{sec:survey}; a full diagnostic table appears in~\cref{smd:tab-der}).
+
+The sandwich-corrected Wald intervals bypass this hierarchical inflation entirely.
+The Wald standard error $\sqrt{[\mathbf{V}_{\mathrm{sand}}]_{pp}}$ is a
+frequentist quantity derived from the observed information and the
+cluster-robust outer product (\cref{eq:V-sand})
+\citep{Binder1983, WilliamsSavitsky2021}: it measures the sampling
+variability of $\hat{\btheta}$ across hypothetical replications of the
+survey, not the width of the Bayesian posterior. For fixed effects in
+hierarchical survey models, this frequentist precision is the appropriate
+basis for population-level inference. The naive posterior intervals remain
+useful for hyperparameters (where the sandwich is not applicable) and for
+state random effects (where the prior appropriately regularizes small-sample
+estimates).
+
+\paragraph{Design effect ratios.}
+The DER column in~\cref{tab:fixed-effects} reveals a substantively
+interpretable pattern. The largest DER is 4.18 for
+$\alpha_{\mathrm{Urban}}$: this coefficient is most severely inflated by
+the survey design because the NSECE's stratification scheme
+\citep{NSECEProjectTeam2022} is explicitly
+linked to urbanicity---urban and rural areas are sampled at different rates.
+The second-largest DER is 3.18 for $\beta_{\mathrm{Urban}}$, confirming
+that the design effect is feature-specific rather than margin-specific. At
+the other extreme, the smallest DER is 1.14 for $\beta_{\mathrm{Hisp}}$,
+indicating that the survey design has minimal impact on this coefficient.
+The overall mean DER of 2.11 is broadly consistent with the Kish $\DEFF$
+of 3.76. \cref{fig:sandwich-impact} displays the naive and sandwich
+intervals side by side for all 11 parameters, together with the DER
+bar chart.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{F6_sandwich_correction.pdf}
+  \caption{Impact of the sandwich variance correction on fixed-effect
+    inference. \emph{Left panel:} naive MCMC 95\% credible intervals (gray)
+    versus sandwich-corrected Wald 95\% confidence intervals (colored) for
+    all 11 fixed effects. The naive intervals reflect prior width; the Wald
+    intervals reflect data information adjusted for the survey design.
+    \emph{Right panel:} design effect ratio ($\DER$) for each parameter. A
+    $\DER$ of 1 indicates no survey design effect; the observed range is
+    1.14--4.18 (mean 2.11).}\label{fig:sandwich-impact}
+\end{figure}
+
+\paragraph{Overdispersion.}
+The estimated concentration parameter is $\hat{\kappa} = \exp(1.919)
+= 6.81$ (Wald CI for $\log\kappa$: $[1.861, 1.976]$), confirming the
+substantial overdispersion previewed in~\cref{sec:data}. With a typical
+enrollment of $n_i \approx 50$, the variance inflation factor
+$(n + \kappa)/(1 + \kappa) \approx 57/8 \approx 7$ is roughly sevenfold
+the binomial baseline. Notably, $\log\kappa$ is the only parameter for
+which the naive and Wald intervals are comparable in width (0.106 vs.\
+0.115), because $\kappa$ has no corresponding state random effect---it is a
+single global parameter informed directly by all $N_{\mathrm{pos}} = 4{,}392$
+positive observations, so the standard Bernstein--von Mises approximation
+holds and prior domination does not arise.
+
+%% ---------------------------------------------------------------------------
+%% 5.3 State-Specific Heterogeneity and Cross-Margin Independence
+%% ---------------------------------------------------------------------------
+
+\subsection{State-specific heterogeneity and cross-margin independence}\label{sec:statevar}
+
+The population-average coefficients describe the national-level effects;
+the state-varying coefficients reveal where and how those effects change
+across jurisdictions.
+
+\paragraph{Cross-margin scatter and independence.}
+\cref{fig:cross-margin} plots the posterior means
+$(\tilde{\alpha}_{\mathrm{pov},s},\;
+\tilde{\beta}_{\mathrm{pov},s})$ across all 51 states. Under the
+hierarchical M2 specification, 48 of 51 states (94\%) fall in the
+upper-left quadrant ($\alpha < 0$, $\beta > 0$), compared with 23
+(45\%) in the preliminary OLS analysis (\cref{sec:features})---a
+dramatic increase driven by hierarchical shrinkage pulling
+small-state estimates toward the negative population-average
+extensive-margin coefficient. The posterior cross-margin correlation
+for the poverty coefficient is
+$\hat{\varrho}_{\mathrm{pov}}^{\mathrm{cross}} \approx 0.021$,
+indistinguishable from zero, implying that the extensive and intensive
+margins of the poverty effect operate through largely independent
+mechanisms---a structural finding consistent with the block-diagonal
+identification result of \cref{prop:sigma12-nonid}. Full state-specific coefficient estimates appear in
+Supplementary Material~D (\cref{smd:states}); the reversal
+probability map is provided in \cref{smd:reversal-map}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\textwidth]{F5_cross_margin_scatter.pdf}
+  \caption{Cross-margin scatter plot of state-specific poverty coefficients
+    from the unweighted M2 model (block-diagonal SVC).
+    Each point represents the posterior mean
+    $(\tilde{\alpha}_{\mathrm{pov},s},\;\tilde{\beta}_{\mathrm{pov},s})$ for
+    one state.
+    Small points without labels denote states with $N < 40$.  The four
+    quadrants correspond to different poverty--enrollment patterns: the
+    upper-left quadrant (shaded) contains 48 of 51 states (94\%),
+    indicating a near-universal reversal pattern under hierarchical shrinkage.
+    The dashed lines indicate the population-average coefficients
+    $(\alpha_{\mathrm{pov}},\;\beta_{\mathrm{pov}})$. The near-zero
+    cross-margin correlation ($\hat{\varrho} \approx 0.021$) implies that the
+    two margins respond to poverty through largely independent
+    mechanisms.}\label{fig:cross-margin}
+\end{figure}
+
+%% ---------------------------------------------------------------------------
+%% 5.4 Marginal Effect Decomposition
+%% ---------------------------------------------------------------------------
+
+\subsection{Marginal effect decomposition}\label{sec:ame}
+
+This subsection demonstrates the marginal effect decomposition---an
+analytical framework enabled by the two-part structure---by translating
+logit-scale coefficients into probability-scale quantities, building on
+the log-scale decomposition in~\cref{prop:lae-lie}.  The decomposition
+separates each covariate's total effect into extensive (access) and
+intensive (share) components, a partition available only under the
+two-part specification.  \Cref{tab:ame-decomp} reports the results.
+
+\paragraph{From log to probability scale.}
+\Cref{prop:lae-lie} decomposes the marginal effect on the
+log-expected-enrollment scale, where the two channels are exactly
+additive.  To translate to the probability scale, apply the product
+rule to $E[Y_i/n_i] = q_i\,h_i$:
+\begin{equation}\label{eq:ame-bridge}
+  \frac{\partial\,(q_i\,h_i)}{\partial x_{i,k}}
+  = \underbrace{h_i\,q_i(1-q_i)\,\tilde{\alpha}_{k,s}}_{\text{extensive}}
+  \;+\;
+  \underbrace{q_i\,h_i\,\varepsilon_{h,i}\,(1-\mu_i)\,
+             \tilde{\beta}_{k,s}}_{\text{intensive}}
+  \;=\; q_i\,h_i\bigl(\LAE_k + \LIE_k\bigr).
+\end{equation}
+The $\AME$ entries in~\cref{tab:ame-decomp} average each component
+over providers and Cholesky-calibrated posterior
+draws~$\btheta^{*(m)}$ (\cref{thm:cholesky}), mapping the log-scale
+decomposition of~\cref{prop:lae-lie} onto the percentage-point scale.
+
+\paragraph{Poverty.}
+On the extensive margin, the $\AME$ of poverty is
+$-0.029$ (95\% CI: $[-0.038, -0.020]$): a one-SD increase
+in community poverty (${\approx}\,8.3$ percentage points)
+reduces the probability of serving any infants by 2.9
+percentage points.  On the intensive margin, $\AME = +0.015$
+(95\% CI: $[+0.009, +0.021]$): among centers that do serve
+infants, the same poverty increase raises the IT share by
+1.5 percentage points.  The total $\AME$ is $-0.014$
+(95\% CI: $[-0.027, -0.001]$), with the extensive margin
+accounting for 66.0\% of the total absolute effect: the access
+barrier dominates, but the intensity response offsets roughly
+half of it.  This decomposition---unavailable under any
+single-equation specification---illustrates the analytical
+value of the two-part structure (\cref{prop:lae-lie}): the
+hurdle identifies the access barrier as the dominant channel,
+a finding that a single-equation model would collapse into a
+muted net effect of $-1.4$~percentage points.
+
+\paragraph{Other covariates.}
+A notable pattern in~\cref{tab:ame-decomp} is that all four covariates
+exhibit opposing extensive and intensive effects---the reversal pattern is
+not unique to poverty. Urbanicity increases access ($+3.9$ pp) but decreases
+intensity ($-0.8$ pp), with the extensive margin accounting for 83.6\% of
+the total. The Black population share increases access ($+4.3$ pp) with a
+negligible intensity effect (Ext.\ Share $= 93.9\%$). Hispanic composition
+stands out: the extensive $\AME$ is effectively zero ($+0.001$), so the
+entire effect operates through the intensive margin, where higher Hispanic
+composition is associated with a lower IT share ($-1.6$ pp). This
+intensive-margin-dominated pattern contrasts sharply with the
+extensive-margin-dominated patterns for the other covariates. In every case,
+a single-equation model would report only the net total effect, concealing
+the offsetting channels---precisely the decomposition that the hurdle
+framework and the $\AME$ formulas in \cref{prop:lae-lie} are designed to
+reveal.
+
+\begin{table}[t]
+\centering
+\caption{Average marginal effect ($\AME$) decomposition from model M3b.
+  Effects are on the probability scale (change per one-SD increase in the
+  covariate). ``Ext.\ Share'' is the percentage of the total absolute
+  effect attributable to the extensive (access) margin, computed as
+  $|\text{Extensive}|/(|\text{Extensive}| + |\text{Intensive}|)$.
+  All four covariates
+  exhibit opposing extensive and intensive effects.  The 95\% intervals
+  are 2.5th and 97.5th posterior percentiles of each $\AME$ component
+  evaluated at the Cholesky-calibrated
+  draws~$\btheta^{*(m)}$~(\cref{thm:cholesky}).}\label{tab:ame-decomp}
+\smallskip
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Covariate & Extensive & Intensive & Total & Ext.\ Share \\
+\midrule
+Poverty & $-0.029$ & $+0.015$ & $-0.014$ & 66.0\% \\
+ & $[-0.038,\,-0.020]$ & $[+0.009,\,+0.021]$ & $[-0.027,\,-0.001]$ & \\[3pt]
+Urban & $+0.039$ & $-0.008$ & $+0.032$ & 83.6\% \\
+ & $[+0.034,\,+0.045]$ & $[-0.014,\,-0.001]$ & $[+0.022,\,+0.041]$ & \\[3pt]
+Black & $+0.043$ & $-0.003$ & $+0.040$ & 93.9\% \\
+ & $[+0.035,\,+0.051]$ & $[-0.009,\,+0.003]$ & $[+0.029,\,+0.052]$ & \\[3pt]
+Hispanic & $+0.001$ & $-0.016$ & $-0.016$ & 2.8\% \\
+ & $[-0.009,\,+0.010]$ & $[-0.021,\,-0.010]$ & $[-0.027,\,-0.004]$ & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ---------------------------------------------------------------------------
+%% 5.5 Policy Moderation
+%% ---------------------------------------------------------------------------
+
+\subsection{Policy moderation}\label{sec:policyresults}
+
+The reversal rate and the geographic clustering documented in
+\cref{sec:statevar} raise a natural question: can observable CCDF policies
+explain why the reversal is strong in some states and absent in
+others?  The $\bGamma_k$ matrices in M3b decompose the state-level
+variation in covariate effects into policy-explained and residual
+components (\cref{prop:poverty-expansion}).  The full $40$-element
+$\bGamma$ matrices appear in Supplementary Material~D
+(\cref{smd:gamma}); here we summarize three key patterns.
+
+First, tiered reimbursement attenuates the extensive-margin poverty
+barrier ($\hat{\gamma}_{1,\mathrm{pov},\mathrm{TR}} = +0.495$,
+$\Pr(>0) = 0.962$) and raises baseline intensive-margin enrollment
+($\hat{\gamma}_{2,\mathrm{int},\mathrm{TR}} = +0.271$,
+$\Pr(>0) = 0.985$).  Second, IT rate add-ons raise baseline
+participation ($\hat{\gamma}_{1,\mathrm{int},\mathrm{IT}} = +0.728$,
+$\Pr(>0) = 0.996$) but paradoxically \emph{strengthen} the poverty
+gradient on the extensive margin
+($\hat{\gamma}_{1,\mathrm{pov},\mathrm{IT}} = -0.488$,
+$\Pr(<0) = 0.982$), suggesting that the add-on primarily benefits
+moderate-poverty areas.  Third, IT add-ons are most effective at closing
+demographic gaps in infant enrollment, particularly for centers in Black
+communities on the intensive margin
+($\hat{\gamma}_{2,\mathrm{Black},\mathrm{IT}} = +0.256$,
+$\Pr(>0) = 1.000$).
+
+The three observable policy variables explain between 4\% and 16\% of
+the between-state variation in poverty coefficients.  These associations
+are cross-sectional and do not support causal claims; nonetheless, the
+$\bGamma$ decomposition illustrates how the hierarchical structure in
+\cref{sec:model} partitions state heterogeneity into policy-attributable
+and residual components.

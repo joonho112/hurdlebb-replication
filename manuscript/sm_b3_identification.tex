@@ -1,0 +1,446 @@
+%% =============================================================================
+%% sm_b3_identification.tex — SM-B, Subsection B.3: Identification
+%% Body content only (\subsection level); parent structure in sm_b.tex
+%% Primary source: dev/log/03_research-notes-deep-mathematical-properties.qmd
+%%   §8 (Identification, lines 692--757)
+%% Corrections applied: M1 (n>=3 threshold for mu-kappa separation)
+%% Deferred issues resolved: 11 (frequentist vs Bayesian identification),
+%%   14 (C2 asymmetry), 22 (Sigma_12 residual vs marginal covariance)
+%% =============================================================================
+
+\subsection{Identification}\label{smb:identification}
+
+This subsection provides the complete proof of the identification theorem
+stated in~\cref{sec:model} (\cref{thm:identification}). We first restate
+the regularity conditions, then develop the five-step proof. Three
+supporting propositions follow: the separation of $\mu$ and $\kappa$ in
+the truncated beta-binomial (with the corrected $n \ge 3$ threshold), the
+likelihood non-identification of the cross-margin covariance
+$\bSigma_{12}$, and sufficient conditions for posterior well-concentration.
+
+%% ---------------------------------------------------------------------------
+%%  B.3.1  Regularity conditions
+%% ---------------------------------------------------------------------------
+
+\paragraph{Regularity conditions.}
+The following conditions are required for identification. They match the
+statement in~\cref{thm:identification} exactly; we include additional
+commentary on the role of each.
+
+\begin{enumerate}[label=\textup{(C\arabic*)},nosep]
+  \item \emph{Full rank.}
+    The design matrices have full rank:
+    $\mathrm{rank}(\mathbf{X}) = P$ and $\mathrm{rank}(\mathbf{V}) = Q$.
+    \label{smb:cond-rank}
+
+  \item \emph{State-level replication.}
+    Each state $s$ has at least $q$ providers with linearly independent
+    covariate vectors $\bx_i^{(r)}$, with at least one zero and at least
+    $q$ positive responders.
+    \label{smb:cond-replication}
+
+  \item \emph{Trial-size variation.}
+    $n_i \ge 3$ for all $i$ with $z_i = 1$, and there exist providers
+    $i, j$ with $s[i] = s[j]$ and $n_i \ne n_j$ in each state.
+    \label{smb:cond-trial}
+
+  \item \emph{Prior support.}
+    The prior $\pi(\btheta)$ has full support on the parameter space.
+    \label{smb:cond-prior}
+\end{enumerate}
+
+\begin{remark}[Asymmetry in C2]\label{smb:rem-c2-asymmetry}
+  The requirements in~\ref{smb:cond-replication} are asymmetric.
+  The extensive margin requires at least one zero per state (to identify
+  $q_s < 1$), while the intensive margin requires at least $q$ positive
+  responders per state (to identify the $q$-dimensional
+  $\bdelta_{2,s}$). The asymmetry reflects the different informational
+  demands of a univariate binary variable versus a $q$-dimensional
+  regression parameter.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  B.3.2  Identification theorem
+%% ---------------------------------------------------------------------------
+
+\begin{theorem}[Identification of the HBB model]
+\label{smb:thm-identification}
+  Under Conditions\/ \textup{(C1)--(C4)}, the full parameter vector
+  $\btheta = (\balpha, \bbeta, \kappa, \{\bdelta_s\}, \bSigma_\delta,
+  \{\bGamma_k\})$ is identified under the posterior.
+\end{theorem}
+
+\begin{proof}
+  The argument separates two layers of identification: (i)~the
+  within-state likelihood identifies \emph{state-specific total
+  coefficients} and~$\kappa$; (ii)~the hierarchical prior structure
+  resolves the additive decomposition of these totals into
+  population-average effects, policy moderators, and residual state
+  deviations. The proof has six steps.
+
+  \medskip\noindent\textit{Step~1: Extensive-margin total state
+  coefficients.}\enspace
+  The marginal distribution of $z_i = \one(Y_i > 0)$ is
+  $\Bern(q_i)$ with
+  \[
+    q_i = \expit\bigl(\bx_i\t\balpha
+      + \bx_i^{(r)\t}\bdelta_{1,s[i]}\bigr).
+  \]
+  Partition $\bx_i = (\bx_i^{(r)\t},\;\bx_i^{(f)\t})\t$ and
+  correspondingly $\balpha = (\balpha^{(r)\t},\;\balpha^{(f)\t})\t$,
+  where $\bx_i^{(r)} \in \R^q$ collects the covariates with
+  state-varying coefficients and $\bx_i^{(f)} \in \R^{P-q}$ collects
+  the fixed-only covariates.%
+  \footnote{When $q = P$ (as in models M2/M3), the fixed-only
+  partition is empty and the argument applies with $\balpha^{(f)}$
+  and $\bx_i^{(f)}$ vacuous.}
+  Define the \emph{total extensive-margin state coefficient}
+  (cf.~\eqref{eq:total-coef})
+  \begin{equation}\label{smb:eq-total-ext}
+    \tilde\balpha_s \;\coloneqq\; \balpha^{(r)} + \bdelta_{1,s}
+    \;\in\; \R^q,
+  \end{equation}
+  so that the linear predictor becomes
+  $\logit(q_i)
+  = \bx_i^{(f)\t}\balpha^{(f)}
+    + \bx_i^{(r)\t}\tilde\balpha_{s[i]}$.
+  The parameters
+  $\boldsymbol{\phi} \coloneqq (\balpha^{(f)},\,
+  \tilde\balpha_1,\ldots,\tilde\balpha_S)
+  \in \R^{(P-q) + Sq}$ enter the model through the
+  effective design matrix
+  \[
+    \mathbf{Z}
+    = \bigl[\mathbf{X}^{(f)},\;
+      \mathbf{D}_1\mathbf{X}_1^{(r)},\;\ldots,\;
+      \mathbf{D}_S\mathbf{X}_S^{(r)}\bigr]
+    \in \R^{N \times [(P-q) + Sq]},
+  \]
+  where $\mathbf{D}_s$ selects providers in state~$s$ and
+  $\mathbf{X}_s^{(r)}$ is the within-state submatrix of
+  $\bx_i^{(r)}$ values. Condition~\ref{smb:cond-replication} ensures
+  $\mathrm{rank}(\mathbf{X}_s^{(r)}) = q$ for each $s$, so the
+  state-specific blocks contribute $Sq$ independent columns.
+  Condition~\ref{smb:cond-rank} ensures
+  $\mathrm{rank}(\mathbf{X}) = P$, so the $(P-q)$ fixed-only columns
+  are not in the span of the state-specific blocks. Hence
+  $\mathrm{rank}(\mathbf{Z}) = (P-q) + Sq$, and by the injectivity of
+  logit, $\balpha^{(f)}$ and
+  $\{\tilde\balpha_s\}_{s=1}^S$ are identified from the
+  extensive-margin likelihood.
+
+  \emph{However}, $\balpha^{(r)}$ and $\bdelta_{1,s}$ are
+  \emph{not} separately identified from the likelihood alone:
+  for any $\mathbf{c} \in \R^q$, the shift
+  $\balpha^{(r)} \mapsto \balpha^{(r)} + \mathbf{c}$,\;
+  $\bdelta_{1,s} \mapsto \bdelta_{1,s} - \mathbf{c}$ for all $s$
+  preserves every $\tilde\balpha_s$ and hence the entire likelihood.
+  The resolution of this $q$-dimensional additive ambiguity is
+  the task of Step~2.
+
+  \medskip\noindent\textit{Step~2: Hierarchical decomposition on the
+  extensive margin.}\enspace
+  The hierarchical model specifies
+  $\bdelta_{1,s} = \bGamma_1\bv_s + \bepsilon_{1,s}$ with
+  $\bepsilon_{1,s} \sim \Norm_q(\mathbf{0},
+  \bSigma_{\varepsilon,1})$.
+  Substituting into~\eqref{smb:eq-total-ext},
+  \[
+    \tilde\balpha_s
+    = \balpha^{(r)} + \bGamma_1\bv_s + \bepsilon_{1,s}.
+  \]
+  Since $\{\tilde\balpha_s\}$ are identified from Step~1 and
+  $\{\bv_s\}$ are observed, this is a multivariate regression of
+  $\tilde\balpha_s$ on $\bv_s$ with intercept $\balpha^{(r)}$.
+  Under $\mathrm{rank}(\mathbf{V}) = Q$ (\ref{smb:cond-rank}) and $S > Q$,
+  the ordinary least-squares solution uniquely determines the
+  slope matrix $\bGamma_1$ and the intercept $\balpha^{(r)}$.
+  Importantly, the identification of $\balpha^{(r)}$ relies on the
+  hierarchical centering convention $\E[\bepsilon_{1,s}] = \mathbf{0}$:
+  this structural assumption pins down the intercept of the
+  between-state regression, resolving the shift ambiguity that the
+  within-state likelihood leaves free.
+  With $\balpha^{(r)}$ identified, the state deviations follow as
+  $\bdelta_{1,s} = \tilde\balpha_s - \balpha^{(r)}$ and the
+  residuals as
+  $\bepsilon_{1,s} = \bdelta_{1,s} - \bGamma_1\bv_s$.
+
+  \medskip\noindent\textit{Step~3: Intensive-margin total state
+  coefficients and $\kappa$.}\enspace
+  Conditional on $z_i = 1$ (i.e., $Y_i > 0$), the distribution of
+  $Y_i$ is $\ZTBB(n_i, \mu_i, \kappa)$ with
+  $\mu_i = \expit(\bx_i\t\bbeta +
+  \bx_i^{(r)\t}\bdelta_{2,s[i]})$.
+  By~\cref{smb:prop-mu-kappa-id} below, the pair $(\mu_i, \kappa)$ is
+  identified from the truncated likelihood whenever $n_i \ge 3$
+  (\ref{smb:cond-trial}). Once $\{\mu_i\}$ are pinned down for
+  all positive responders, partition
+  $\bbeta = (\bbeta^{(r)\t},\;\bbeta^{(f)\t})\t$ and define
+  the \emph{total intensive-margin state coefficient}
+  \begin{equation}\label{smb:eq-total-int}
+    \tilde\bbeta_s \;\coloneqq\; \bbeta^{(r)} + \bdelta_{2,s}
+    \;\in\; \R^q,
+  \end{equation}
+  so that
+  $\logit(\mu_i) = \bx_i^{(f)\t}\bbeta^{(f)}
+    + \bx_i^{(r)\t}\tilde\bbeta_{s[i]}$.
+  An argument identical to Step~1---using the injectivity of logit,
+  the effective design matrix, and the rank conditions
+  \ref{smb:cond-rank}--\ref{smb:cond-replication}---identifies
+  $\bbeta^{(f)}$ and $\{\tilde\bbeta_s\}_{s=1}^S$ from the
+  intensive-margin likelihood. As in the extensive margin,
+  $\bbeta^{(r)}$ and $\bdelta_{2,s}$ are individually identified
+  only through the hierarchical layer.
+
+  \medskip\noindent\textit{Step~4: Hierarchical decomposition on the
+  intensive margin.}\enspace
+  Parallel to Step~2, the hierarchical specification
+  $\bdelta_{2,s} = \bGamma_2\bv_s + \bepsilon_{2,s}$ yields the
+  between-state regression
+  $\tilde\bbeta_s = \bbeta^{(r)} + \bGamma_2\bv_s
+  + \bepsilon_{2,s}$.
+  Under the same rank conditions, $\bGamma_2$ and $\bbeta^{(r)}$
+  are uniquely determined, whence
+  $\bdelta_{2,s} = \tilde\bbeta_s - \bbeta^{(r)}$ and
+  $\bepsilon_{2,s} = \bdelta_{2,s} - \bGamma_2\bv_s$.
+
+  \medskip\noindent\textit{Step~5: Identification of
+  $\bSigma_\varepsilon$.}\enspace
+  The residual state effects $\bepsilon_s =
+  (\bepsilon_{1,s}\t, \bepsilon_{2,s}\t)\t$ are identified from
+  Steps~1--4 for $s = 1,\ldots,S$. These $S = 51$ independent draws from
+  $\Norm_{2q}(\mathbf{0}, \bSigma_\varepsilon)$ identify the covariance
+  matrix $\bSigma_\varepsilon$ provided that $S > 2q$ (so that the
+  sample covariance has full rank). In our application, $q = 5$, so
+  $S = 51 > 2q = 10$. The full covariance matrix $\bSigma_\delta$ is
+  then reconstructed from $\bGamma_k$, $\bSigma_\varepsilon$, and the
+  variance of $\bv_s$ via the identity
+  $\Var(\bdelta_{k,s}) = \bGamma_k\Var(\bv_s)\bGamma_k\t +
+  \bSigma_{\varepsilon,k}$.
+
+  \medskip\noindent\textit{Step~6: No label-switching ambiguity.}\enspace
+  Unlike mixture models where component labels are exchangeable, the
+  hurdle model~\citep{Mullahy1986} has an \emph{observed} partition:
+  $z_i = \one(Y_i > 0)$
+  is a deterministic function of the data. Part~1 (extensive) and Part~2
+  (intensive) operate on distinct, observable subsets. No permutation of
+  component labels preserves the likelihood, so there is no
+  label-switching invariance.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  B.3.3  Separation of mu and kappa in the truncated BB
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Identification of $\mu$ and $\kappa$ in
+  $\ZTBB$]\label{smb:prop-mu-kappa-id}
+  For $n \ge 3$, the parameters $(\mu, \kappa)$ are identified from the
+  full likelihood of the zero-truncated beta-binomial: if
+  \begin{equation}\label{smb:eq-ztbb-id-hypothesis}
+    f_{\ZTBB}(y \mid n, \mu_1, \kappa_1)
+    = f_{\ZTBB}(y \mid n, \mu_2, \kappa_2)
+    \quad \textup{for all } y \in \{1,\ldots,n\},
+  \end{equation}
+  then $(\mu_1, \kappa_1) = (\mu_2, \kappa_2)$.
+\end{proposition}
+
+\begin{proof}
+  We use a constructive argument based on consecutive probability ratios.
+  Write $a = \mu\kappa$ and $b = (1-\mu)\kappa$ for the shape parameters
+  of the (untruncated) beta-binomial.
+
+  \medskip\noindent\textit{Step~1: Truncation cancels in consecutive
+  ratios.}\enspace
+  Since $f_{\ZTBB}(y \mid n, \mu, \kappa) = f_{\BetaBin}(y \mid n,
+  \mu, \kappa) / (1 - p_0)$ for $y \ge 1$, the consecutive ratio
+  \[
+    R_y \;\coloneqq\; \frac{f_{\ZTBB}(y)}{f_{\ZTBB}(y-1)}
+    = \frac{f_{\BetaBin}(y)}{f_{\BetaBin}(y-1)}
+    = \frac{n - y + 1}{y}\cdot\frac{a + y - 1}{b + n - y},
+    \qquad y = 2, \ldots, n,
+  \]
+  depends only on $(a, b, n)$ and not on $p_0$.
+
+  \medskip\noindent\textit{Step~2: Two ratios determine $(a,b)$ when
+  $n \ge 3$.}\enspace
+  For $n \ge 3$, the ratios $R_2$ and $R_3$ yield two independent
+  equations. Define
+  \[
+    r_2 = \frac{2}{n-1}\,R_2 = \frac{a + 1}{b + n - 2},
+    \qquad
+    r_3 = \frac{3}{n-2}\,R_3 = \frac{a + 2}{b + n - 3}.
+  \]
+  Cross-multiplying gives the linear system
+  \begin{align*}
+    a + 1 &= r_2\,(b + n - 2), \\
+    a + 2 &= r_3\,(b + n - 3).
+  \end{align*}
+  Subtracting the first from the second:
+  $1 = (r_3 - r_2)\,b + r_3(3 - n) - r_2(2 - n)$,
+  so
+  \begin{equation}\label{smb:eq-b-from-ratios}
+    b = \frac{r_2(n-2) - r_3(n-3) + 1}{r_3 - r_2},
+  \end{equation}
+  and then $a = r_2(b + n - 2) - 1$. The denominator $r_3 - r_2 \ne 0$
+  for all $a, b > 0$, since
+  \[
+    r_3 - r_2
+    = \frac{(a+2)(b+n-2) - (a+1)(b+n-3)}{(b+n-2)(b+n-3)}
+    = \frac{a + b + n - 1}{(b+n-2)(b+n-3)}
+    > 0.
+  \]
+  Thus $(a, b)$ is uniquely determined by the observed truncated
+  distribution, and $\mu = a/(a+b)$, $\kappa = a + b$.
+
+  \medskip\noindent\textit{Step~3: $n = 2$ boundary.}\enspace
+  For $n = 2$, only the single ratio $R_2$ is available, giving one
+  equation in two unknowns: identification fails.
+  See~\cref{smb:rem-n-equals-2} for the explicit one-dimensional
+  manifold of equivalent parameters.
+\end{proof}
+
+\begin{remark}[The $n = 2$ boundary case]\label{smb:rem-n-equals-2}
+  For $n = 2$, the truncated support $\{1, 2\}$ provides only one free
+  probability for two unknowns $(\mu, \kappa)$, so identification fails.
+  The consecutive-ratio proof makes this precise: only $R_2$ is available,
+  leaving a one-dimensional manifold of equivalent parameters. This
+  motivates the requirement $n_i \ge 3$ in~\textup{(C3)}, satisfied by
+  all 4{,}392 positive responders in the NSECE ($\min n_i = 4$).
+\end{remark}
+
+\begin{remark}[Role of trial-size variation]
+\label{smb:rem-trial-variation}
+  The requirement in~\textup{(C3)} that $n_i \ne n_j$ within each state
+  provides identification strength beyond minimal sufficiency: observations
+  sharing $\mu_i$ but differing in $n_i$ yield differential information
+  about $\kappa$ via the nonlinear dependence of $p_0$ on $n$.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  B.3.4  Cross-margin covariance: likelihood non-identification
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Likelihood non-identification of
+  $\bSigma_{12}$]\label{smb:prop-sigma12-nonid}
+  The off-diagonal block
+  $\bSigma_{12} = \Cov(\bepsilon_{1,s}, \bepsilon_{2,s})$ is not
+  identified by the likelihood alone
+  \citep[cf.~the analogous discussion
+  in][Section~3.1]{GhosalEtAl2020}. The log-likelihood $\ell(\btheta)$
+  is completely invariant to $\bSigma_{12}$ conditional on the realized
+  values $\{\bepsilon_{1,s}, \bepsilon_{2,s}\}_{s=1}^S$.
+\end{proposition}
+
+\begin{proof}
+  By the block-diagonal Fisher information
+  (\cref{smb:prop-block-diag}), the log-likelihood decomposes as
+  $\ell = \ell_{\mathrm{ext}} + \ell_{\mathrm{int}}$, where
+  $\ell_{\mathrm{ext}}$ depends on $(\balpha, \bdelta_{1,\cdot})$ and
+  $\ell_{\mathrm{int}}$ depends on
+  $(\bbeta, \bdelta_{2,\cdot}, \kappa)$. Neither component involves
+  $\bSigma_\varepsilon$: the covariance enters the model solely through
+  the hierarchical prior
+  \[
+    \bepsilon_s
+    = \begin{pmatrix}\bepsilon_{1,s}\\\bepsilon_{2,s}\end{pmatrix}
+    \sim \Norm_{2q}\!\left(\mathbf{0},\;
+      \begin{pmatrix}
+        \bSigma_{\varepsilon,1} & \bSigma_{12}\\
+        \bSigma_{21} & \bSigma_{\varepsilon,2}
+      \end{pmatrix}\right).
+  \]
+  Conditional on the realized $\{\bepsilon_s\}$, the likelihood is a
+  fixed function of $(\balpha, \bbeta, \kappa)$ alone, and
+  $\bSigma_{12}$ drops out entirely.
+\end{proof}
+
+\begin{remark}[$\bSigma_{12}$ as residual covariance]
+\label{smb:rem-sigma12-residual}
+  The cross-margin covariance
+  $\bSigma_{12} = \Cov(\bepsilon_{1,s},\, \bepsilon_{2,s})$ represents
+  the \emph{residual} cross-margin covariance after removing the
+  observed policy effects via $\bGamma_1\bv_s$ and $\bGamma_2\bv_s$.
+  The \emph{marginal} cross-margin relationship between participation
+  and intensity includes both this residual channel and the direct
+  policy-moderated channel through $\bGamma_k$. Specifically,
+  \[
+    \Cov(\bdelta_{1,s},\, \bdelta_{2,s})
+    = \bGamma_1\,\Var(\bv_s)\,\bGamma_2\t + \bSigma_{12},
+  \]
+  so a finding of $\bSigma_{12} \approx \mathbf{0}$ does not imply
+  that the two margins are unrelated---only that policies fully account
+  for their cross-margin covariation.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  B.3.5  Well-concentration conditions
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Well-concentration of
+  $\bSigma_{12}$]\label{smb:prop-sigma12-wellconc}
+  \leavevmode\\
+  The posterior for $\bSigma_{12}$ is well-concentrated when the
+  following conditions hold:
+  \begin{enumerate}[label=\textup{(\roman*)}]
+    \item $S > 2q + 1$, so that the sample covariance of the
+      $\{\bepsilon_s\}$ has a positive-definite posterior mode;
+    \item the individual state effects $\bepsilon_{1,s}$ and
+      $\bepsilon_{2,s}$ are themselves well-estimated, which requires the
+      state-level replication condition\/ \textup{(C2)}; and
+    \item the $\LKJ(\eta)$ prior
+      \citep{LewandowskiEtAl2009} on the correlation matrix
+      $\mathbf{R}_\varepsilon$ with $\eta \ge 1$ provides
+      regularization, shrinking the posterior toward independence when the
+      data are weakly informative about cross-margin dependence.
+  \end{enumerate}
+  For our model with $q = 5$: the requirement $S > 2q + 1 = 11$ is
+  amply satisfied by $S = 51$. The posterior standard deviation of each
+  element of $\bSigma_{12}$ decreases at rate $O(S^{-1/2}) \approx 0.14$.
+\end{proposition}
+
+%% ---------------------------------------------------------------------------
+%%  B.3.6  Frequentist vs. Bayesian identification
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Frequentist versus Bayesian
+  identification]\label{smb:rem-freq-vs-bayes}
+  The identification result in~\cref{smb:thm-identification} is stated
+  for the posterior, not the frequentist maximum likelihood estimator.
+  Under the Bayesian framework, identification means the posterior
+  concentrates on the true parameter as $N \to \infty$
+  \citep[cf.~the Bernstein--von~Mises theorem under
+  misspecification;][]{KleijnVanDerVaart2012}, which requires
+  both \emph{likelihood identification} (the sampling model pins down
+  $\btheta$) and \emph{prior identification} (the prior does not place
+  mass on non-identified subspaces). Steps~1 and~3 establish
+  likelihood identification of the total state coefficients
+  $\{\tilde\balpha_s\}$, $\{\tilde\bbeta_s\}$, and~$\kappa$;
+  Steps~2 and~4 show that the hierarchical centering convention
+  $\E[\bepsilon_{k,s}] = \mathbf{0}$ resolves the additive shift
+  ambiguity and identifies the individual components
+  $(\balpha, \bbeta, \bdelta_s, \bGamma_k)$;
+  Step~5 establishes likelihood identification for the
+  within-margin blocks $\bSigma_{\varepsilon,1}$ and
+  $\bSigma_{\varepsilon,2}$.
+
+  The cross-margin block $\bSigma_{12}$ is the exception:
+  \cref{smb:prop-sigma12-nonid} shows that it receives zero
+  \emph{conditional} likelihood information. As discussed in
+  \cref{rem:cond-vs-marg}, the marginal likelihood obtained by
+  integrating over $\bdelta_s$ does couple the margins and in principle
+  identifies $\bSigma_{12}$, but the conditional formulation adopted
+  here is natural for MCMC computation.  In either framing, the
+  $\LKJ(\eta)$ prior provides essential regularization: frequentist
+  REML estimation of a $2q \times 2q$ covariance from $S = 51$ groups
+  is numerically fragile (boundary solutions, singular Hessians).
+  This is not a deficiency of the model but rather a structural
+  consequence of the hurdle factorization
+  (\cref{smb:prop-block-diag}). The posterior for $\bSigma_{12}$
+  concentrates at rate $O(S^{-1/2})$---determined by the $S = 51$
+  state-level observations---rather than at the parametric rate
+  $O(N^{-1/2})$ available to the remaining parameters. This slower
+  concentration rate is the price of learning about the cross-margin
+  dependence structure, which we view as justified by the substantive
+  importance of understanding whether states that restrict access also
+  intensify conditional enrollment.
+\end{remark}

@@ -1,0 +1,418 @@
+%% =============================================================================
+%% section4.tex — Section 4: Simulation Study
+%% =============================================================================
+
+\section{Simulation Study}\label{sec:simulation}
+
+The sandwich-corrected pseudo-posterior developed in~\cref{sec:survey}
+rests on asymptotic arguments whose finite-sample behavior must be
+characterized before the methodology can be recommended for practice.
+This section maps the \emph{operating envelope} of the three inferential
+strategies---unweighted, weighted-naive, and sandwich-corrected---through
+a controlled simulation that varies design informativeness across conditions
+calibrated to realistic survey parameters. We treat the exercise as an
+\emph{honest diagnostic} rather than a pure validation: the results identify
+where each strategy succeeds, where it fails, and why, exposing a
+fundamental structural limitation of sandwich correction for hierarchical
+variance components. By establishing these operating properties here,
+we provide the evidential basis for the reporting strategy applied in
+\cref{sec:application}.
+
+%% ---------------------------------------------------------------------------
+%% 4.1 Design
+%% ---------------------------------------------------------------------------
+
+\subsection{Design}\label{sec:simdesign}
+
+\paragraph{Data-generating process.}
+We construct a finite super-population of $M = 50{,}000$ providers
+distributed across $S = 51$ states, with state sizes proportional to
+observed survey counts. For each provider~$i$ in state~$s$, a
+covariate vector $\bx_i = (1, x_{\mathrm{pov}}, x_{\mathrm{urb}},
+x_{\mathrm{blk}}, x_{\mathrm{his}})^\t$ is drawn from empirical
+marginal distributions. True parameters are calibrated to the M1
+(random intercept) unweighted fit:
+\begin{align}\label{eq:sim-truth}
+  \balpha_0 &= (0.696,\; -0.119,\; 0.253,\; -0.070,\; -0.139)^\t, \notag\\
+  \bbeta_0  &= (-0.032,\; 0.057,\; -0.018,\; 0.080,\; 0.040)^\t, \quad
+  \log\kappa_0 = 1.655,
+\end{align}
+with state random-effect standard deviations $\tau_{\mathrm{ext}} = 0.577$,
+$\tau_{\mathrm{int}} = 0.208$, and cross-margin correlation
+$\rho_{\mathrm{cross}} = 0.285$. State random effects
+$\bdelta_s = (\delta_{1s}, \delta_{2s})^\t \sim \Norm_2(\mathbf{0},
+\bSigma_\delta)$ are drawn once per replication.
+Participation indicators are generated as
+$z_i \sim \Bern(q_i)$ with $\logit(q_i) = \bx_i^\t \balpha_0 +
+\delta_{1,s[i]}$, and positive counts as
+$Y_i \mid z_i = 1 \sim \ZTBB(n_i, \mu_i, \kappa_0)$
+with $\logit(\mu_i) = \bx_i^\t \bbeta_0 + \delta_{2,s[i]}$,
+where $n_i$ is drawn from the empirical distribution of total enrollment.
+The zero-truncated beta-binomial is sampled via rejection from the
+unconditional $\BetaBin(n_i, \mu_i, \kappa_0)$.
+
+\paragraph{Sampling design and scenarios.}
+From each finite population we draw a stratified cluster sample of
+approximately $N \approx 7{,}000$ providers. Survey informativeness is
+controlled through a size-biased inclusion probability:
+\begin{equation}\label{eq:sim-inclusion}
+  \log \pi_i = c_0 + \rho_{\mathrm{inc}} \cdot y_i^{*},
+\end{equation}
+where $y_i^{*}$ is the standardized latent outcome and $c_0$ is chosen to
+yield the target sample size. The informativeness parameter
+$\rho_{\mathrm{inc}}$ indexes three scenarios (\cref{tab:sim-scenarios}).
+Scenario S3 is calibrated to match the NSECE design
+($\DEFF_{\mathrm{Kish}} = 3.76$; \cref{tab:data-summary}). Scenario S4
+doubles the informativeness to stress-test the sandwich correction under
+conditions more extreme than those present in the actual survey.
+
+\begin{table}[t]
+\centering
+\caption{Simulation scenarios. The informativeness parameter
+  $\rho_{\mathrm{inc}}$ controls the dependence between inclusion
+  probabilities and the outcome (\cref{eq:sim-inclusion});
+  $\mathrm{CV}(w)$ is the coefficient of variation of the resulting
+  sampling weights; Kish $\DEFF = 1 + \mathrm{CV}^2(w)$.}\label{tab:sim-scenarios}
+\smallskip
+\begin{tabular}{@{}llccl@{}}
+\toprule
+Scenario & $\rho_{\mathrm{inc}}$ & $\mathrm{CV}(w)$ &
+  Kish $\DEFF$ & Description \\
+\midrule
+S0 & 0.00 & $\approx 1.0$ & $\approx 2.0$ & Non-informative baseline \\
+S3 & 0.15 & $\approx 1.67$ & $\approx 3.8$ & NSECE-calibrated \\
+S4 & 0.50 & $\approx 2.0$  & $\approx 5.0$ & Stress test \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Estimators.}
+Each replication is analyzed under three estimators (\cref{tab:sim-estimators})
+corresponding to the three inferential strategies in
+\cref{sec:survey}. E-UW fits the model with an unweighted likelihood and
+uses the naive MCMC posterior for interval construction. E-WT replaces
+the likelihood with the pseudo-log-likelihood
+(\cref{eq:pseudo-loglik}; \citealp{SavitskyToth2016}),
+correcting point estimates for informativeness but retaining the
+naive posterior variance. E-WS augments E-WT with the
+sandwich-corrected variance via the Cholesky affine transformation
+(\cref{thm:cholesky}; \citealp{WilliamsSavitsky2021}), yielding
+Wald-type confidence intervals.
+The Cholesky transformation is applied block-wise following the $\DER$
+classification in~\cref{sec:survey}: full correction for fixed effects,
+no correction for hyperparameters.
+
+\begin{table}[t]
+\centering
+\caption{Estimator definitions.}\label{tab:sim-estimators}
+\smallskip
+\small
+\begin{tabular}{@{}lp{2.5cm}p{3.5cm}l@{}}
+\toprule
+Estimator & Likelihood & Standard errors & Purpose \\
+\midrule
+E-UW & Unweighted         & Model-based (naive) & Ignore design \\
+E-WT & Pseudo (weighted)  & Model-based (naive) & Correct point est. \\
+E-WS & Pseudo (weighted)  & Sandwich~\eqref{eq:V-sand} & Full correction \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Target parameters and computation.}
+We track five parameters that span fixed effects and variance components:
+the poverty slopes $\alpha_{\mathrm{pov}}$ and $\beta_{\mathrm{pov}}$,
+the overdispersion $\log\kappa$, and the state-effect standard deviations
+$\tau_{\mathrm{ext}}$ and $\tau_{\mathrm{int}}$. Performance is measured
+by 90\% interval coverage, relative bias
+$\text{RB} = 100 \times (\bar{\hat\theta} - \theta_0)/|\theta_0|$ (\%),
+root mean squared error (RMSE), and the width ratio
+\[
+  \text{WR}
+  = \frac{\text{median CI width (E-WS)}}
+         {\text{median CI width (E-WT)}},
+\]
+which isolates the inflation attributable to sandwich correction.
+Each scenario--estimator combination uses $R = 200$ replications.
+The Monte Carlo standard error (MCSE) for each coverage estimate is
+$\mathrm{MCSE} = \sqrt{\hat{p}(1 - \hat{p})/R}$, ranging from 0.0~pp
+(at boundary coverage) to a maximum of 3.5~pp (near 50\% coverage);
+at the 90\% nominal level, $\mathrm{MCSE} \approx 2.1$~pp.
+Per-cell MCSEs are reported in parentheses in \cref{tab:sim-results};
+coverage deviating from 90\% by more than $2 \times \mathrm{MCSE}$ is
+flagged with~$\dagger$.
+Each replication fits the M1 specification
+(\cref{tab:model-hierarchy}) with 4 chains of 3{,}500 iterations
+(1{,}500 warmup, 2{,}000 sampling), for a total of 8{,}000 post-warmup draws.
+All replications achieved $\hat{R} < 1.01$ \citep{Vehtari2021} and a minimum bulk effective
+sample size exceeding 1{,}600.
+
+%% ---------------------------------------------------------------------------
+%% 4.2 Results
+%% ---------------------------------------------------------------------------
+
+\subsection{Results}\label{sec:simresults}
+
+\cref{tab:sim-results} reports coverage, relative bias, RMSE, and width
+ratio for all five parameters across three scenarios and three
+estimators. \cref{fig:sim-coverage} displays the coverage rates
+graphically with MCSE bands. We organize the results around five
+findings that together characterize the operating properties of the
+estimation framework.
+
+\paragraph{Finding 1: The unweighted estimator achieves near-nominal
+coverage for fixed effects under correct specification.}
+Under E-UW, coverage of $\alpha_{\mathrm{pov}}$ and
+$\beta_{\mathrm{pov}}$ lies within the 89--93\% range across all three
+scenarios, comfortably within two MCSE of the 90\% nominal level. This
+holds even under S4, where the sampling design is strongly informative.
+The result confirms that when the generative model is \emph{correctly specified}
+and inference is based on the model likelihood alone, ignoring the survey
+weights does not compromise interval coverage.
+This finding should \emph{not} be read as an argument against survey
+weighting: in practice the generative model is never exactly correct,
+and Findings~2--3 demonstrate that weighting with sandwich correction
+provides important robustness against model misspecification.  A
+dedicated misspecification experiment (\cref{smf:misspec}) confirms
+this: under an M2 DGP with omitted state-varying poverty slopes,
+E-UW coverage collapses to 0.5--30\% for the poverty coefficients,
+while E-WS retains 67.5--79.0\% coverage.
+The unweighted estimator
+also maintains nominal coverage for $\log\kappa$ (90.5--92.0\%) and
+for the hyperparameters $\tau_{\mathrm{ext}}$ and $\tau_{\mathrm{int}}$
+(91.0--98.0\%), with the single exception of $\tau_{\mathrm{ext}}$ under
+S4 (77.0\%), where the extreme weight structure induces composition
+effects in the sampled random effects.
+
+\paragraph{Finding 2: Naive weighted inference produces severe
+undercoverage.}
+The weighted estimator E-WT shows severe and systematically worsening
+undercoverage as design complexity increases. For
+$\alpha_{\mathrm{pov}}$, coverage drops from 81.0\% under S0 to 58.5\%
+under S3 to 53.0\% under S4---a collapse from modest undercoverage to
+barely half of the draws containing the true value. The pattern for
+$\beta_{\mathrm{pov}}$ is similar (76.5\%, 62.5\%, 56.5\%). The
+mechanism is well understood
+\citep{SavitskyToth2016}: the pseudo-likelihood inflates the
+effective sample size, concentrating the posterior around point
+estimates that carry weight-induced bias, producing intervals that are
+simultaneously too narrow and miscentered.
+
+\paragraph{Finding 3: Sandwich correction provides meaningful but
+imperfect recovery.}
+The sandwich-corrected E-WS recovers substantially from the E-WT
+collapse, achieving 82.0--88.5\% coverage for the two poverty
+coefficients---gains of roughly 24--33 percentage points over E-WT in
+S3 and S4. The width ratio tracks the design effect monotonically:
+WR increases from 1.22 under S0 to 1.64--2.06 under S4
+(\cref{tab:sim-results}), consistent with
+$\mathrm{WR} \approx \sqrt{\DER}$ and the empirical $\DER$ range
+of 1.14--4.18 in~\cref{tab:fixed-effects}. The residual coverage gap
+reflects the finite-sample bias of the sandwich variance
+estimator---a known property of cluster-robust estimators when the
+number of clusters is moderate~\citep{Binder1983}.
+
+To characterize the gap more precisely, we decompose it into
+\emph{width} and \emph{bias} components via the SE calibration ratio
+$\widehat{\mathrm{SD}} / \overline{\mathrm{SE}}$, where
+$\widehat{\mathrm{SD}}$ is the actual standard deviation of point
+estimates across replications and $\overline{\mathrm{SE}}$ is the mean
+reported sandwich standard error
+(\cref{smf:tab-decomposition}).  For the poverty coefficients under
+S3, the SE ratio is 1.13--1.14, confirming that the sandwich SE
+underestimates the true sampling variability by approximately 13\%,
+while the standardized mean bias $|\bar{b}|/\widehat{\mathrm{SD}}$ is
+negligible (0.06--0.22).  The gap is therefore \emph{width-driven}:
+intervals are correctly centered but 13\% too narrow.  This 13\%
+underestimate is consistent with the $O(S^{-1})$ finite-sample bias of
+cluster-robust variance estimators with $S = 51$
+clusters~\citep{Binder1983}, and suggests that small-sample corrections
+(e.g., CR2; \citealp{PustejovskyTipton2018}) could further
+close the gap---an avenue for future work.  Widening to
+95\% nominal intervals confirms this interpretation: E-WS coverage
+rises to 87.5--88.5\% for the poverty coefficients under S3---a gain
+consistent with the expected $\approx 5$~pp from Normal tail
+probability---leaving a proportional residual gap
+(\cref{smf:tab-coverage95}).
+
+\paragraph{Finding 4: Sandwich correction is less effective for the
+overdispersion parameter.}
+For $\log\kappa$, E-WS achieves 57.0--76.5\% coverage---substantially
+below the 82--88.5\% observed for the poverty coefficients. This
+discrepancy arises because $\kappa$ enters the variance function of the
+beta-binomial nonlinearly: the relationship between the weighted
+score variance and the sandwich-corrected parameter variance is less
+well approximated by the linear Taylor expansion underlying the sandwich
+formula. The width ratio for $\log\kappa$ is comparable to that for the
+linear coefficients (1.31--2.04), confirming that the sandwich
+correction does widen the intervals appropriately; the shortfall in
+coverage is driven primarily by point estimate bias rather than variance
+underestimation.
+
+\paragraph{Finding 5: Hyperparameters cannot be sandwich-corrected.}
+A notable finding concerns $\tau_{\mathrm{ext}}$ and
+$\tau_{\mathrm{int}}$. Under E-WT and E-WS, coverage drops to
+0.0--8.0\% across all scenarios, with relative bias of
+$+68$ to $+110$\%. The width ratio is exactly $\mathrm{WR} = 1.00$,
+confirming that E-WS$\;\equiv\;$E-WT for these parameters by
+construction: the sandwich correction is applied only to parameters
+that enter the weighted log-likelihood through scores, and the
+hierarchical variance components do not produce individual-level score
+contributions. The $\DER$ is undefined for $\tau$
+(\cref{eq:der}), so no variance inflation can be computed. The
+substantial positive bias arises because the pseudo-likelihood treats
+each observation as carrying $\tilde{w}_i$ units of information,
+inflating the apparent between-state heterogeneity by a factor
+proportional to $\E[\tilde{w}_i^2]$. The unweighted estimator
+E-UW maintains coverage of 91--98\% for both
+$\tau$ parameters in S0 and S3; in S4,
+$\tau_{\mathrm{ext}}$ drops to 77.0\%---the only E-UW
+failure in the entire table---reflecting the growing tension between
+the informative sampling weights (which are ignored) and the
+extensive-margin random-effect variance.
+
+\paragraph{Cross-margin correlation.}
+We additionally track recovery of the cross-margin correlation
+$\rho_{\mathrm{cross}} = \operatorname{cor}(\delta_j^{\mathrm{ext}},
+\delta_j^{\mathrm{int}})$, estimated via the plug-in
+$\hat{\rho} = \operatorname{cor}(\bar{\delta}_j^{\mathrm{ext}},
+\bar{\delta}_j^{\mathrm{int}})$ from $S = 51$ posterior mean random
+effects (\cref{tab:rho-cross-sim}).
+Under the NSECE-calibrated design~(S3), the unweighted estimator E-UW
+overestimates the true $\rho_{\mathrm{cross}} = 0.285$ with a relative
+bias of $+104\%$ (RMSE $= 0.364$), while the weighted estimator E-WT
+exhibits moderate downward bias of $-42\%$ (RMSE $= 0.226$).
+As with $\tau_{\mathrm{ext}}$ and $\tau_{\mathrm{int}}$,
+E-WS $\equiv$ E-WT for this hyperparameter: the sandwich correction
+adjusts only fixed-effect covariances and cannot modify the
+random-effect correlation structure.
+Because full posterior draws of $\Omega$ were not retained in the
+simulation archive, per-replication credible intervals are unavailable;
+\cref{tab:rho-cross-sim} reports frequentist summaries across
+replications instead.
+
+%% --- Table T7: Simulation Results ---
+\begin{table}[t]
+\centering
+\caption{Simulation results: empirical coverage of 90\% intervals
+  (\%, with Monte Carlo standard error in parentheses),
+  relative bias (RB, \%), root mean squared error (RMSE), and width ratio
+  (WR) across $R = 200$ replications per scenario.
+  E-UW = unweighted; E-WT = weighted, naive posterior variance;
+  E-WS = weighted, sandwich-corrected (\cref{eq:V-sand}).
+  $\mathrm{WR} = \text{median CI width (E-WS)}/\text{median CI
+  width (E-WT)}$; $\mathrm{WR} = 1.00$ for $\tau$ parameters indicates that
+  E-WS $\equiv$ E-WT by construction.
+  $\dagger$ = coverage deviates from 90\% by more than 2 MCSE.
+  MCSE $= \sqrt{\hat{p}(1-\hat{p})/R}$; range 0.0--3.5
+  pp.}\label{tab:sim-results}
+\smallskip
+\small
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}l ccc rrr rrr r@{}}
+\toprule
+ & \multicolumn{3}{c}{Coverage (\%, MCSE)} &
+   \multicolumn{3}{c}{Relative bias (\%)} &
+   \multicolumn{3}{c}{RMSE} & \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Parameter & E-UW & E-WT & E-WS & E-UW & E-WT & E-WS & E-UW & E-WT & E-WS & WR \\
+\midrule
+\multicolumn{11}{@{}l}{\textit{Panel A: S0 --- Non-informative ($\DEFF \approx 2.0$)}} \\[2pt]
+$\alpha_{\text{pov}}$ & 93.0\,(1.8) & 81.0\,(2.8)$^{\dagger}$ & 88.5\,(2.3)
+  & $+$13.2 & $+$4.9 & $+$4.9 & 0.033 & 0.044 & 0.044 & 1.22 \\
+$\beta_{\text{pov}}$ & 93.0\,(1.8) & 76.5\,(3.0)$^{\dagger}$ & 86.5\,(2.4)
+  & $-$9.0 & $-$4.8 & $-$4.8 & 0.016 & 0.022 & 0.022 & 1.22 \\
+$\log\kappa$ & 91.5\,(2.0) & 64.0\,(3.4)$^{\dagger}$ & 76.5\,(3.0)$^{\dagger}$
+  & $-$0.8 & $+$1.6 & $+$1.6 & 0.023 & 0.040 & 0.040 & 1.31 \\
+$\tau_{\text{ext}}$ & 97.5\,(1.1)$^{\dagger}$ & 3.0\,(1.2)$^{\dagger}$ & 3.0\,(1.2)$^{\dagger}$
+  & $+$9.6 & $+$68.8 & $+$68.8 & 0.082 & 0.423 & 0.423 & 1.00 \\
+$\tau_{\text{int}}$ & 91.0\,(2.0) & 8.0\,(1.9)$^{\dagger}$ & 8.0\,(1.9)$^{\dagger}$
+  & $-$6.6 & $+$70.6 & $+$70.6 & 0.036 & 0.158 & 0.158 & 1.00 \\[4pt]
+\multicolumn{11}{@{}l}{\textit{Panel B: S3 --- NSECE-calibrated ($\DEFF \approx 3.8$)}} \\[2pt]
+$\alpha_{\text{pov}}$ & 89.5\,(2.2) & 58.5\,(3.5)$^{\dagger}$ & 82.0\,(2.7)$^{\dagger}$
+  & $+$16.5 & $+$12.9 & $+$12.9 & 0.037 & 0.072 & 0.072 & 1.71 \\
+$\beta_{\text{pov}}$ & 89.0\,(2.2) & 62.5\,(3.4)$^{\dagger}$ & 82.5\,(2.7)$^{\dagger}$
+  & $-$16.7 & $-$3.2 & $-$3.2 & 0.017 & 0.032 & 0.032 & 1.64 \\
+$\log\kappa$ & 92.0\,(1.9) & 34.0\,(3.3)$^{\dagger}$ & 60.5\,(3.5)$^{\dagger}$
+  & $-$0.5 & $+$3.3 & $+$3.3 & 0.020 & 0.068 & 0.068 & 1.75 \\
+$\tau_{\text{ext}}$ & 98.0\,(1.0)$^{\dagger}$ & 0.5\,(0.5)$^{\dagger}$ & 0.5\,(0.5)$^{\dagger}$
+  & $+$8.0 & $+$105.6 & $+$105.6 & 0.091 & 0.639 & 0.639 & 1.00 \\
+$\tau_{\text{int}}$ & 97.5\,(1.1)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$
+  & $-$8.6 & $+$97.6 & $+$97.6 & 0.040 & 0.211 & 0.211 & 1.00 \\[4pt]
+\multicolumn{11}{@{}l}{\textit{Panel C: S4 --- Stress test ($\DEFF \approx 5.0$)}} \\[2pt]
+$\alpha_{\text{pov}}$ & 92.5\,(1.9) & 53.0\,(3.5)$^{\dagger}$ & 86.0\,(2.5)
+  & $+$20.5 & $+$11.9 & $+$11.9 & 0.036 & 0.083 & 0.083 & 2.06 \\
+$\beta_{\text{pov}}$ & 91.0\,(2.0) & 56.5\,(3.5)$^{\dagger}$ & 84.0\,(2.6)$^{\dagger}$
+  & $-$21.7 & $-$2.2 & $-$2.2 & 0.017 & 0.035 & 0.035 & 1.91 \\
+$\log\kappa$ & 90.5\,(2.1) & 23.0\,(3.0)$^{\dagger}$ & 57.0\,(3.5)$^{\dagger}$
+  & $+$0.8 & $+$4.1 & $+$4.1 & 0.020 & 0.083 & 0.083 & 2.04 \\
+$\tau_{\text{ext}}$ & 77.0\,(3.0)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$
+  & $+$26.5 & $+$110.2 & $+$110.2 & 0.175 & 0.671 & 0.671 & 1.00 \\
+$\tau_{\text{int}}$ & 97.0\,(1.2)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$ & 0.0\,(0.0)$^{\dagger}$
+  & $-$0.7 & $+$103.9 & $+$103.9 & 0.043 & 0.225 & 0.225 & 1.00 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+%% --- Figure F7: Coverage Plot ---
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{F7_simulation_coverage.pdf}
+  \caption{Empirical coverage of 90\% intervals across $R = 200$
+    replications. Each panel corresponds to a simulation scenario
+    (S0, S3, S4 with increasing Kish $\DEFF$). Points show coverage
+    rates for each parameter--estimator combination; the horizontal
+    dashed line marks the 90\% nominal level; the shaded band indicates
+    $\pm\,2$ MCSE ($\approx 4.2$ percentage points). E-UW (unweighted)
+    maintains near-nominal coverage throughout. E-WT (weighted, naive)
+    collapses as $\DEFF$ increases. E-WS (sandwich-corrected) provides
+    meaningful recovery for fixed effects but cannot correct the
+    hyperparameters $\tau_{\mathrm{ext}}$ and
+    $\tau_{\mathrm{int}}$.}\label{fig:sim-coverage}
+\end{figure}
+
+\paragraph{Practical recommendations.}
+The simulation results support a three-part reporting strategy for
+survey-weighted Bayesian inference with sandwich-corrected
+pseudo-posteriors. First, for population-average fixed effects, report
+sandwich-corrected Wald confidence intervals as the primary inferential
+tool, acknowledging that finite-sample coverage may fall 2--8 percentage
+points below nominal when the Kish $\DEFF$ exceeds 3. Second, for
+hierarchical variance components, report unweighted posterior intervals,
+since the sandwich correction is structurally inapplicable and the
+weighted pseudo-posterior produces systematically biased point estimates.
+Third, always compute and report the $\DER$ (\cref{eq:der}) for each
+parameter of interest: this scalar summary communicates the magnitude of
+the survey design effect in units directly comparable to the classical
+$\DEFF$ and allows readers to gauge how much the sandwich correction has
+widened each interval. The empirical $\DER$ values
+in~\cref{tab:fixed-effects} (range 1.14--4.18) and the simulation width
+ratios in \cref{tab:sim-results} (range 1.22--2.06) are mutually
+consistent and provide complementary evidence on the design effect
+magnitude.
+
+These recommendations apply broadly to any hierarchical
+Bayesian model estimated with survey-weighted pseudo-likelihoods, not
+only to the hurdle beta-binomial specification: the structural
+inapplicability of sandwich correction to variance components is a
+consequence of the score-based construction of $\mathbf{V}_{\mathrm{sand}}$
+(\cref{eq:V-sand}) and holds for any hierarchical model in which
+hyperparameters lack individual-level score contributions. The
+two-track reporting strategy adopted in~\cref{sec:application}---Wald
+(sandwich) intervals for fixed effects and model-based posterior intervals for
+hyperparameters---implements these recommendations directly; the latter track
+provides valid inference only to the extent that the hierarchical model is
+correctly specified.
+Supplementary figures showing relative bias distributions, width ratio
+boxplots, and $\DER$ summaries across all scenarios and parameters
+appear in Supplementary Material~E, which also provides a frequentist
+contextualization (\cref{smf:frequentist}) demonstrating that the
+sandwich-corrected pseudo-posterior fixed effects are design-consistent
+with conventional \texttt{svyglm} estimates while accommodating
+hierarchical and distributional features that the frequentist approach
+cannot.
+
+With the operating envelope established, we now implement the two-track
+reporting strategy in the NSECE application: sandwich-corrected Wald
+intervals for population-average fixed effects and unweighted posterior
+intervals for state-level random effects and variance components.

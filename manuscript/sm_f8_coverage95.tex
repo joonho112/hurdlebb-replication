@@ -1,0 +1,45 @@
+%% =============================================================================
+%% sm_f8_coverage95.tex — SM-E, Subsection E.8: 95% Coverage Results
+%% Body content only (\subsection level); parent structure in sm_e.tex
+%% =============================================================================
+
+\subsection{Coverage at the 95\% nominal level}
+\label{smf:coverage95}
+
+\Cref{smf:tab-coverage95} reports coverage at both the 90\% and 95\%
+nominal levels for all five target parameters across three scenarios and
+three estimators.  For all estimators, 95\% intervals are computed as
+$\hat\theta \pm 1.96 \times \mathrm{SE}$, where $\mathrm{SE}$ is the
+posterior standard deviation (E-UW, E-WT) or the sandwich standard error
+(E-WS).  Verification confirms that this Wald construction agrees with
+the original quantile-based 90\% intervals to within 0.1~pp, validating
+the Normal approximation.
+
+\begin{table}[htbp]
+\centering
+\caption{Interval coverage (\%) at 90\% and 95\% nominal levels.
+  Parenthetical values are MCSEs ($= \sqrt{\hat{p}(1 - \hat{p})/R}$;
+  $R = 200$).  At the 95\% nominal level, $\mathrm{MCSE} \approx 1.5$~pp.}
+\label{smf:tab-coverage95}
+\input{Figures/ST_B9_coverage95}
+\end{table}
+
+The results reinforce the width-driven interpretation of the E-WS
+coverage gap identified in \cref{smf:decomposition}.  For the poverty
+coefficients under S3, widening from 90\% to 95\% adds only
+5.5--6.0~pp of coverage (from 82.0--82.5\% to 87.5--88.5\%), leaving
+a residual gap of 6.5--7.5~pp relative to the 95\% nominal level.
+If the sandwich SE were perfectly calibrated, the expected gain would be
+$\approx 5.0$~pp (from the additional probability mass in the Normal
+tails between $z_{0.05}$ and $z_{0.025}$); the observed gains are
+consistent with this prediction, confirming that the coverage shortfall
+scales proportionally with interval width rather than reflecting a
+level-dependent phenomenon.
+
+In contrast, E-UW achieves near-nominal coverage at both levels
+(89.0--93.0\% at 90\%; 95.0--97.5\% at 95\%) for all fixed effects,
+providing further evidence that the unweighted posterior is well
+calibrated when the model is correctly specified.  For
+$\log\kappa$ under E-WS, the 95\% coverage (68.5\%) remains
+substantially below nominal, consistent with the bias-driven shortfall
+identified in \cref{smf:tab-decomposition}.

@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: >-
+  Replication Package: A Bayesian Hierarchical Hurdle Beta-Binomial Model
+  for Survey-Weighted Bounded Counts and Its Application to
+  Childcare Enrollment
+message: >-
+  If you use this replication package, please cite the associated
+  paper using the metadata in this file.
+type: software
+authors:
+  - given-names: JoonHo
+    family-names: Lee
+    email: jlee296@ua.edu
+    affiliation: The University of Alabama
+    orcid: 'https://orcid.org/0000-0003-1367-732X'
+repository-code: 'https://github.com/joonho112/hurdlebb-replication'
+url: 'https://github.com/joonho112/hurdlebb'
+keywords:
+  - Bayesian hierarchical model
+  - beta-binomial distribution
+  - bounded discrete proportions
+  - hurdle model
+  - sandwich variance correction
+  - survey weighting
+  - replication
+license: MIT
+preferred-citation:
+  type: article
+  authors:
+    - given-names: JoonHo
+      family-names: Lee
+      email: jlee296@ua.edu
+      affiliation: The University of Alabama
+      orcid: 'https://orcid.org/0000-0003-1367-732X'
+  title: >-
+    A Bayesian Hierarchical Hurdle Beta-Binomial Model for Survey-Weighted
+    Bounded Counts and Its Application to Childcare Enrollment
+  year: 2026
+  journal: arXiv preprint

@@ -1,0 +1,904 @@
+%% =============================================================================
+%% section3.tex — Section 3: The Hierarchical Hurdle Beta-Binomial Model
+%% =============================================================================
+
+\section{The Hierarchical Hurdle Beta-Binomial Model}\label{sec:model}
+
+This section develops the hierarchical hurdle beta-binomial (HBB) model
+whose distributional specification was motivated by the four data features
+documented in \cref{sec:features}.  The model combines three
+building blocks---hurdle, beta-binomial kernel, and hierarchical
+prior---into a unified framework and adds two methodological
+contributions that are new to this class of models: a cross-margin
+covariance whose identification operates entirely through the
+hierarchical prior rather than the conditional likelihood, and a
+Cholesky-based sandwich correction that extends
+pseudo-posterior inference to the two-part hierarchical setting.
+
+In plain terms, the model works as follows.  A \emph{hurdle} first
+separates providers that serve infants and toddlers from those that do
+not, treating participation as a logistic regression with
+state-specific intercepts and slopes.  For participants, a
+\emph{beta-binomial} kernel models the share of enrollment devoted to
+infants and toddlers, accommodating the bounded count and within-state
+overdispersion.  The two margins share a joint hierarchical prior on
+their state-level deviations, so that a state's participation barrier
+and its conditional enrollment intensity can be positively or negatively
+correlated---the cross-margin covariance that is the paper's central
+structural novelty.  Sampling weights enter through a
+pseudo-likelihood, and a sandwich correction restores design-consistent
+coverage for population-average parameters.
+
+%% ---------------------------------------------------------------------------
+%% 3.1 Notation and Data Structure
+%% ---------------------------------------------------------------------------
+
+\subsection{Notation and data structure}\label{sec:notation}
+
+We observe $N = 6{,}785$ center-based childcare providers drawn from
+$S = 51$ states (including the District of Columbia).  Each provider $i$
+is nested in a state $s[i]$.  The outcome pair $(Y_i, n_i)$ records
+infant/toddler enrollment $Y_i \in \{0, 1, \ldots, n_i\}$ out of total
+enrollment $n_i$; the participation indicator is $z_i = \one(Y_i > 0)$.
+\cref{tab:notation} collects the symbols used throughout the paper.
+All continuous covariates are standardized prior to analysis.
+
+\begin{table}[ht]
+\centering
+\caption{Notation summary. Dimensions are shown in parentheses.}\label{tab:notation}
+\smallskip
+\begin{tabularx}{\textwidth}{@{}lclX@{}}
+\toprule
+Symbol & Dimension & Domain & Description \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Indices and dimensions}} \\[2pt]
+$i$ & --- & $\{1,\ldots,N\}$ & Provider index ($N = 6{,}785$) \\
+$s$ & --- & $\{1,\ldots,S\}$ & State index ($S = 51$, incl.\ DC) \\
+$s[i]$ & --- & $\{1,\ldots,S\}$ & State membership of provider $i$ \\
+$N_s$ & --- & $\mathbb{Z}_{>0}$ & Number of providers in state $s$; $\sum_s N_s = N$ \\[4pt]
+\multicolumn{4}{@{}l}{\textit{Outcome variables}} \\[2pt]
+$n_i$ & $(1)$ & $\mathbb{Z}_{>0}$ & Total enrollment, ages 0--5 (treated as fixed) \\
+$Y_i$ & $(1)$ & $\{0,1,\ldots,n_i\}$ & Infant/toddler (IT) enrollment count \\
+$z_i$ & $(1)$ & $\{0,1\}$ & $z_i = \one(Y_i > 0)$: IT participation indicator \\[4pt]
+\multicolumn{4}{@{}l}{\textit{Covariates}} \\[2pt]
+$\bx_i$ & $(P \times 1)$ & $\R^P$ & Provider covariates, $P=5$: intercept, poverty, urban, Black, Hispanic \\
+$\bx_i^{(r)}$ & $(q\times 1)$ & $\R^q$ & State-varying subvector of $\bx_i$ ($q = P$ in M2/M3) \\
+$q_i$ & $(1)$ & $(0,1)$ & Participation probability (extensive margin); cf.~\eqref{eq:eta-ext} \\
+$\bv_s$ & $(Q\times 1)$ & $\R^Q$ & State policy vector, $Q = 4$: intercept + $Q-1$ policy instruments \\[4pt]
+\multicolumn{4}{@{}l}{\textit{Parameters}} \\[2pt]
+$\balpha$ & $(P \times 1)$ & $\R^P$ & Population-average extensive-margin coefficients \\
+$\bbeta$ & $(P \times 1)$ & $\R^P$ & Population-average intensive-margin coefficients \\
+$\kappa$ & $(1)$ & $\R_{>0}$ & Beta-binomial concentration \\
+$\bdelta_{k,s}$ & $(q\times 1)$ & $\R^q$ & State deviations, margin $k\in\{1,2\}$, state $s$ \\
+$\bGamma_k$ & $(q\times Q)$ & $\R^{q \times Q}$ & Cross-level policy moderator matrix, margin $k$ \\
+$\bSigma_\delta$ & $(2q\times 2q)$ & $\mathbb{S}_{++}^{2q}$ & Cross-margin state-effect covariance \\[4pt]
+\multicolumn{4}{@{}l}{\textit{Survey design}} \\[2pt]
+$w_i$ & $(1)$ & $\R_{>0}$ & Sampling weight \\
+$\tilde{w}_i$ & $(1)$ & $\R_{>0}$ & Normalized weight: $\tilde{w}_i = w_i N / \textstyle\sum_j w_j$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+%% ---------------------------------------------------------------------------
+%% 3.2 The Hurdle Beta-Binomial Likelihood
+%% ---------------------------------------------------------------------------
+
+\subsection{The hurdle beta-binomial likelihood}\label{sec:likelihood}
+
+\paragraph{The beta-binomial distribution.}
+The beta-binomial distribution in the mean--precision parameterization
+\citep{Griffiths1973,Prentice1986}
+$(\mu,\kappa)$ sets $a = \mu\kappa$ and $b = (1-\mu)\kappa$, where
+$\mu \in (0,1)$ is the conditional mean parameter and $\kappa > 0$ is the
+concentration parameter. Larger $\kappa$ implies less overdispersion, with the
+$\Bin(n,\mu)$ distribution recovered as $\kappa \to \infty$. The probability
+mass function (PMF) is
+\begin{equation}\label{eq:bb-pmf}
+  \Prob(Y = y \mid n,\mu,\kappa)
+  = \binom{n}{y}
+    \frac{B\bigl(y + \mu\kappa,\; n - y + (1-\mu)\kappa\bigr)}
+         {B\bigl(\mu\kappa,\;(1-\mu)\kappa\bigr)},
+  \quad y = 0,1,\ldots,n,
+\end{equation}
+where $B(\cdot,\cdot)$ is the beta function. The first two moments are
+\begin{equation}\label{eq:bb-moments}
+  \E[Y] = n\mu, \qquad
+  \Var(Y) = n\mu(1-\mu)\,\frac{n + \kappa}{1 + \kappa}.
+\end{equation}
+The variance inflation factor $(n+\kappa)/(1+\kappa)$ exceeds unity for all
+$n \ge 2$, capturing overdispersion relative to the binomial. In the
+childcare data, with a typical enrollment of $n_i \approx 50$ and an
+estimated $\kappa \approx 7$, this factor is approximately $57/8 \approx 7$,
+far beyond what a binomial model can accommodate.
+
+\paragraph{Computational remark.}
+In practice, we compute $\log f_{\BetaBin}$ using the
+\texttt{lbeta()} function to avoid numerical overflow when $n_i$
+exceeds 50. Specifically, the log-PMF is evaluated as
+$\log\binom{n}{y} + \texttt{lbeta}(y+a,\,n-y+b) - \texttt{lbeta}(a,b)$,
+which remains stable for $n_i$ up to several hundred.
+
+\paragraph{Zero probability.}
+At $y = 0$ the PMF simplifies to a product form
+that is both interpretable and numerically stable:
+\begin{equation}\label{eq:p0}
+  p_0(n,\mu,\kappa)
+  = \prod_{j=0}^{n-1} \frac{(1-\mu)\kappa + j}{\kappa + j}.
+\end{equation}
+Each factor in the product is the conditional probability that the $j$-th
+``trial'' yields a non-IT outcome, given all preceding trials did so. The
+product form shows that $p_0$ is strictly decreasing in both $\mu$ and $\kappa$
+(for $n \ge 2$): higher mean intensity and lower overdispersion each reduce the
+probability of observing zero IT enrollment.
+
+\paragraph{Hurdle construction.}
+As documented in \cref{sec:features}, the zeros in the childcare data are
+structural: they reflect a deliberate decision not to serve infants rather
+than a random draw from a count distribution.  This motivates a hurdle
+specification \citep{Mullahy1986,Cragg1971} that separates the participation
+decision from the enrollment intensity.
+
+\begin{definition}[Hurdle beta-binomial model]\label{def:hbb}
+  For provider $i$ with enrollment capacity $n_i$, the HBB model specifies
+  \begin{equation}\label{eq:hbb}
+    f(y_i \mid q_i, \mu_i, \kappa, n_i) =
+    \begin{cases}
+      1 - q_i, & \text{if } y_i = 0, \\[4pt]
+      q_i \cdot f_{\ZTBB}(y_i \mid n_i, \mu_i, \kappa),
+        & \text{if } y_i \in \{1,\ldots,n_i\},
+    \end{cases}
+  \end{equation}
+  where $q_i \in (0,1)$ is the participation probability (extensive margin),
+  $\mu_i \in (0,1)$ is the conditional mean IT share (intensive margin), and
+  the zero-truncated beta-binomial PMF is
+  \begin{equation}\label{eq:ztbb}
+    f_{\ZTBB}(y \mid n,\mu,\kappa)
+    = \frac{f_{\BetaBin}(y \mid n,\mu,\kappa)}{1 - p_0(n,\mu,\kappa)},
+    \quad y = 1,\ldots,n.
+  \end{equation}
+\end{definition}
+
+The hurdle separates two distinct decisions that childcare centers face. The
+\emph{extensive margin} captures whether a center serves any infants at
+all---the access decision---governed by $q_i$. The \emph{intensive margin}
+captures how many infant slots a center offers relative to its total
+capacity---the intensity decision---governed by $\mu_i$. This separation
+reflects a genuine two-stage process: a center must first decide to accept the
+costs and regulatory burden of infant care (clearing the hurdle), and only then
+does it determine how many infant slots to offer.
+
+The log-likelihood under conditional independence decomposes additively into
+extensive and intensive components,
+\begin{multline}\label{eq:loglik-decomp}
+  \ell(\btheta)
+  = \underbrace{\sum_{i=1}^{N}\bigl[z_i\log q_i + (1-z_i)\log(1-q_i)\bigr]}
+    _{\ell_{\mathrm{ext}}(\balpha)} \\
+  + \underbrace{\sum_{i:\,z_i=1}\bigl[\log f_{\BetaBin}(y_i \mid n_i,\mu_i,\kappa)
+    - \log\bigl(1 - p_{0,i}\bigr)\bigr]}
+    _{\ell_{\mathrm{int}}(\bbeta,\kappa)},
+\end{multline}
+where $p_{0,i} = p_0(n_i,\mu_i,\kappa)$. This separation is a structural
+property of hurdle models: the binary indicator $z_i$ is a sufficient statistic
+partition that renders the extensive parameters $\balpha$ and the intensive
+parameters $(\bbeta,\kappa)$ variation-independent in the likelihood. In
+contrast, zero-inflated models introduce latent at-risk indicators that couple
+the two components, complicating both estimation and interpretation.
+
+\paragraph{Unconditional expectation and the intensity function.}
+The unconditional mean enrollment count is
+\begin{equation}\label{eq:uncond-mean}
+  \E[Y_i] = q_i \cdot n_i \cdot h(\mu_i, n_i, \kappa),
+  \qquad
+  h(\mu, n, \kappa) \equiv \frac{\mu}{1 - p_0(n,\mu,\kappa)},
+\end{equation}
+where $h$ is the \emph{intensity function} mapping the latent mean proportion
+$\mu$ to the expected proportion among participants. Since $h(\mu) \ge \mu$
+(truncation shifts the conditional mean upward), participating centers are
+predicted to have a higher IT share than the latent parameter $\mu$ alone
+would suggest. The function $h$ is central to the reversal
+interpretation: the key question is whether the opposing signs of the extensive
+and intensive coefficients can be ``absorbed'' by a nonlinear response of $h$,
+or whether the reversal is genuinely a coefficient-level phenomenon. The
+following theorem resolves this.
+
+\begin{theorem}[Monotonicity of $h$]\label{thm:monotonicity}
+  For all $n \ge 2$, $\kappa > 0$, and $\mu \in (0,1)$,
+  \begin{equation}\label{eq:dh-dmu}
+    \frac{\partial h}{\partial \mu} > 0.
+  \end{equation}
+  For $n = 1$, $h(\mu) \equiv 1$ for all $\mu \in (0,1)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+  Define $\Phi(\mu) = (1 - p_0) - \mu\, p_0\, \Lambda$, where
+  $\Lambda = \kappa\sum_{j=0}^{n-1}[(1-\mu)\kappa + j]^{-1} > 0$.
+  Since $\partial h / \partial\mu = \Phi(\mu)/(1-p_0)^2$, the sign of the
+  derivative equals the sign of $\Phi$. One verifies that $\Phi(0) = 0$ and
+  $\Phi'(\mu) = \mu\, p_0(\Lambda^2 - \Lambda_2)$, where
+  $\Lambda_2 = \kappa^2\sum_{j=0}^{n-1}[(1-\mu)\kappa + j]^{-2}$.
+  For $n \ge 2$, the Cauchy--Schwarz inequality gives
+  $\Lambda^2 > \Lambda_2$, so $\Phi'(\mu) > 0$ on $(0,1)$.
+  Since $\Phi$ starts at zero and is strictly increasing, $\Phi(\mu) > 0$ for
+  all $\mu \in (0,1)$. The full proof appears in~\cref{app:math-properties}.
+\end{proof}
+
+\paragraph{Interpretation for the poverty reversal.}
+\cref{thm:monotonicity} establishes that the intensity function $h$ is strictly
+increasing in $\mu$: a center with a higher underlying IT intensity $\mu$ will
+always have a higher expected IT share among participants, regardless of how much
+overdispersion is present. Consequently, the poverty reversal---whereby higher poverty reduces participation ($\alpha_{\mathrm{pov}} < 0$) yet
+increases conditional intensity ($\beta_{\mathrm{pov}} > 0$)---is purely a
+\emph{coefficient-level} phenomenon, not an artifact of the nonlinear response
+function. Researchers can examine the posterior distributions of
+$\alpha_{\mathrm{pov}}$ and $\beta_{\mathrm{pov}}$ directly to assess the
+reversal, without needing to account for nonlinear link function effects.
+
+\begin{proposition}[Elasticity of $h$]\label{prop:elasticity}
+  Define the elasticity $\varepsilon_h = (\partial h / \partial\mu)(\mu / h)$.
+  Then
+  \begin{equation}\label{eq:elasticity}
+    \varepsilon_h(\mu) = 1 - \omega(\mu),
+    \qquad
+    \omega(\mu) = \frac{\mu\, p_0\, \Lambda}{1 - p_0} \in (0,1)
+    \quad \text{for } n \ge 2.
+  \end{equation}
+  Hence $\varepsilon_h \in (0,1)$: the intensity function responds
+  inelastically to changes in $\mu$.
+\end{proposition}
+
+The inelastic response arises because increasing $\mu$ simultaneously increases
+the probability that a center would have had a positive draw even without the
+hurdle (raising $1 - p_0$, the denominator of $h$), partially offsetting the
+numerator effect. In practical terms, a one-percent increase in a center's
+underlying IT propensity $\mu$ translates into \emph{less} than a one-percent
+increase in its expected IT share among participants. At our estimated parameters
+($\mu \approx 0.30$, $\kappa \approx 7$, $n \approx 50$), $\omega \approx 0.07$,
+so the elasticity is approximately 0.93---relatively modest damping in this
+parameter region.
+
+%% ---------------------------------------------------------------------------
+%% 3.3 State-Varying Coefficients with Cross-Margin Covariance
+%% ---------------------------------------------------------------------------
+
+\subsection{State-varying coefficients (SVC) with cross-margin covariance}\label{sec:svc}
+
+The reversal is not a single national pattern. Preliminary estimates
+show that fewer than half of states exhibit the classic reversal---a negative
+extensive-margin poverty coefficient paired with a positive intensive-margin
+one (\cref{sec:prelim}). This geographic variation raises a fundamental
+question: \emph{Does the poverty--enrollment relationship vary systematically
+across states, and if so, are the extensive and intensive margins linked?}
+
+\paragraph{Linear predictors.}
+Following the spatially varying coefficient framework of~\citet{GelfandEtAl2003},
+the extensive and intensive margins are linked to provider characteristics
+through logit linear predictors:
+\begin{align}
+  \logit(q_i)
+    &= \bx_i\t\balpha + \bx_i^{(r)\t}\bdelta_{1,s[i]},
+    \label{eq:eta-ext} \\[4pt]
+  \logit(\mu_i)
+    &= \bx_i\t\bbeta + \bx_i^{(r)\t}\bdelta_{2,s[i]},
+    \label{eq:eta-int}
+\end{align}
+where $\balpha, \bbeta \in \R^P$ are population-average fixed effects---the
+``national story''---and $\bdelta_{k,s} \in \R^q$
+($k = 1$ for extensive, $k = 2$ for intensive) are zero-mean state-specific
+deviations that capture how each state's poverty--enrollment relationship
+departs from the national average. The subvector $\bx_i^{(r)}$ consists of
+the first $q$ components of $\bx_i$ whose coefficients are permitted to vary
+across states.
+The \emph{total state-specific coefficient} for covariate $j$ on margin $k$ is
+\begin{equation}\label{eq:total-coef}
+  \tilde{\alpha}_{j,s} = \alpha_j + \delta_{1,s,j},
+  \qquad
+  \tilde{\beta}_{j,s} = \beta_j + \delta_{2,s,j}.
+\end{equation}
+In the childcare application, a state with $\tilde{\alpha}_{\mathrm{pov},s} < 0$
+and $\tilde{\beta}_{\mathrm{pov},s} > 0$ exhibits the reversal: higher
+community poverty is associated with lower participation but higher conditional
+intensity.
+
+\paragraph{Cross-margin covariance: the key novelty.}
+Standard hurdle models estimate the two margins independently. We depart from
+this convention by stacking the state deviations into a single $2q$-dimensional
+vector:
+\begin{equation}\label{eq:delta-stack}
+  \bdelta_s
+  = \begin{pmatrix} \bdelta_{1,s} \\ \bdelta_{2,s} \end{pmatrix}
+  \sim \Norm_{2q}\!\parens{\mathbf{0},\;\bSigma_\delta},
+  \qquad s = 1,\ldots,S,
+\end{equation}
+with the $2q \times 2q$ positive-definite covariance
+\begin{equation}\label{eq:sigma-delta}
+  \bSigma_\delta
+  = \begin{pmatrix}
+      \bSigma_{11} & \bSigma_{12} \\
+      \bSigma_{21} & \bSigma_{22}
+    \end{pmatrix},
+\end{equation}
+where $\bSigma_{11}$ governs between-state variation in extensive-margin
+coefficients, $\bSigma_{22}$ governs the intensive margin, and the
+off-diagonal block $\bSigma_{12} = \bSigma_{21}\t$ captures
+\emph{cross-margin dependence} (in the policy-moderated model M3b, $\bSigma_{12}$ refers to the \emph{residual} cross-margin covariance after removing policy effects; see~\cref{smb:rem-sigma12-residual}). This cross-margin covariance is the central
+structural novelty of the model: it allows states with stronger participation
+barriers (larger $|\delta_{1,\mathrm{pov},s}|$) to simultaneously exhibit
+stronger or weaker intensity effects ($\delta_{2,\mathrm{pov},s}$), with the
+direction and magnitude estimated from data. The cross-margin correlation for
+covariate $j$ is
+\begin{equation}\label{eq:cross-corr}
+  \varrho_j^{\mathrm{cross}} = \frac{[\bSigma_{12}]_{jj}}
+  {\sqrt{[\bSigma_{11}]_{jj}\,[\bSigma_{22}]_{jj}}}.
+\end{equation}
+
+\begin{proposition}[Non-identification of $\bSigma_{12}$ from the
+  conditional likelihood]
+  \label{prop:sigma12-nonid}
+  Conditional on the state-level deviations $\bdelta_s$, the Fisher
+  information matrix for the HBB model is block-diagonal between
+  the extensive-margin parameters $(\balpha, \bdelta_{1,1},\ldots,\bdelta_{1,S})$
+  and the intensive-margin parameters
+  $(\bbeta, \bdelta_{2,1},\ldots,\bdelta_{2,S}, \kappa)$. Consequently,
+  $\bSigma_{12}$ receives zero information from the conditional
+  likelihood and is identified through the hierarchical prior on
+  $\bdelta_s$ acting on the $S = 51$ estimated state-level deviations.
+\end{proposition}
+
+\begin{proof}
+  The log-likelihood decomposes as $\ell = \ell_{\mathrm{ext}} + \ell_{\mathrm{int}}$
+  (\cref{eq:loglik-decomp}). Since $\ell_{\mathrm{ext}}$ depends only on
+  $(\balpha, \bdelta_{1,\cdot})$ and $\ell_{\mathrm{int}}$ depends only on
+  $(\bbeta, \bdelta_{2,\cdot}, \kappa)$, the cross-derivatives
+  $\partial^2 \ell / \partial\phi_1 \partial\phi_2\t$ vanish for any
+  extensive-margin parameter $\phi_1$ and intensive-margin parameter $\phi_2$.
+  Hence the observed and expected information matrices are block-diagonal
+  across margins, and the off-diagonal block $\bSigma_{12}$ appears nowhere
+  in the likelihood.
+\end{proof}
+
+\paragraph{$\bSigma_{12}$ as a hierarchical estimand.}
+\cref{prop:sigma12-nonid} clarifies the information structure for
+$\bSigma_{12}$: its posterior is shaped entirely by the $S = 51$ pairs
+$(\bdelta_{1,s}, \bdelta_{2,s})$ drawn from the common
+$\Norm_{2q}(\mathbf{0}, \bSigma_\delta)$ distribution, giving it an
+effective sample size of $S$ rather than $N$.  While a frequentist could
+in principle estimate $\bSigma_{12}$ via REML on the marginal
+likelihood, the high-dimensional covariance structure ($2q = 10$
+free parameters per margin) relative to the number of groups ($S = 51$)
+makes unrestricted frequentist estimation fragile.  The $\LKJ(\eta)$
+prior provides finite-sample regularization, concentrating the posterior
+at rate $O(S^{-1/2})$. This contrasts with the within-margin blocks
+$\bSigma_{11}$ and $\bSigma_{22}$, which also receive direct likelihood
+information through the state-specific coefficients and concentrate at
+rate $O(N^{-1/2})$.
+
+\begin{remark}[Conditional versus marginal likelihood]\label{rem:cond-vs-marg}
+  The block-diagonality in \cref{prop:sigma12-nonid} is a statement
+  about the \emph{conditional} likelihood $p(\mathbf{y} \mid \bdelta,
+  \balpha, \bbeta, \kappa)$.  The marginal likelihood obtained by
+  integrating over the random effects,
+  $p(\mathbf{y} \mid \bSigma_\delta, \balpha, \bbeta, \kappa) = \int
+  p(\mathbf{y} \mid \bdelta) \, p(\bdelta \mid \bSigma_\delta) \,
+  \mathrm{d}\bdelta$, does \emph{not} factorize when $\bSigma_{12}
+  \neq \mathbf{0}$, so that $\bSigma_{12}$ is in principle identified
+  through the marginal likelihood.  However, the conditional
+  formulation is natural for MCMC computation, where $\bdelta_s$ is
+  sampled as a latent variable and $\bSigma_\delta$ is updated
+  conditional on the realized deviations.  In a frequentist framework,
+  REML estimation of $\bSigma_{12}$ via the marginal likelihood is
+  possible in principle but numerically fragile when $S = 51$ groups
+  contribute to a $2q = 10$-dimensional covariance matrix: boundary
+  solutions and singular Hessians are common in this regime.  The
+  Bayesian approach with $\LKJ$ regularization provides stable
+  estimation at the cost of the slower $O(S^{-1/2})$ concentration
+  rate documented in \cref{prop:sigma12-id}.
+\end{remark}
+
+\begin{proposition}[Identifiability of $\bSigma_{12}$ via the prior]
+  \label{prop:sigma12-id}
+  Suppose (i) $S > 2q$, (ii) each state $s$ has at least $q$ providers with
+  linearly independent covariates, and (iii) the prior on $\bSigma_\delta$ has
+  full support on $\mathbb{S}_{++}^{2q}$. Then the posterior of $\bSigma_\delta$
+  (including $\bSigma_{12}$) is well-concentrated, with the posterior standard
+  deviation of each element of $\bSigma_{12}$ decreasing at rate $O(S^{-1/2})$.
+  For our data, $S = 51 \gg 2q = 10$.
+\end{proposition}
+
+\begin{remark}[Boundary condition]\label{rem:boundary}
+  When $S < 2q$ the cross-margin covariance is poorly identified even with a
+  proper prior, because $S$ draws from a $2q$-dimensional distribution yield a
+  singular sample covariance matrix. In this regime, the scalar cross-margin
+  parameter $a$ of~\citet{GhosalEtAl2020}, which nests as
+  $\bSigma_{12} = a\,\bSigma_{22}$, provides a parsimonious but still useful
+  summary of cross-margin dependence.
+\end{remark}
+
+\paragraph{Computational remark.}
+In Stan~\citep{CarpenterEtAl2017}, the state deviations are sampled via the non-centered
+parameterization (NCP): draw $\bz_s \iid \Norm_{2q}(\mathbf{0},\mathbf{I})$
+and set $\bdelta_s = \diag(\boldsymbol{\tau})\,\mathbf{L}_\varepsilon\,\bz_s$,
+where $\mathbf{L}_\varepsilon$ is the Cholesky factor of the
+correlation matrix $\mathbf{R}_\varepsilon$. This eliminates the funnel
+geometry~\citep{BetancourtGirolami2015} that arises under centered parameterization when small $\tau_j$ forces
+$\delta_{s,j}$ near zero, causing divergent transitions in Hamiltonian Monte
+Carlo. With $S = 51$ states and $N_s$ ranging from 17 to 568, NCP is the
+appropriate default.
+
+%% ---------------------------------------------------------------------------
+%% 3.4 Policy Moderators and Marginal Effect Decomposition
+%% ---------------------------------------------------------------------------
+
+\subsection{Cross-level policy moderators and marginal effect decomposition}
+\label{sec:policy}
+
+Why does the reversal appear in some states but not others?  State-level
+subsidy policies provide a natural explanation: they directly affect the cost
+structure that centers face when deciding whether and how much to serve infants.
+We formalize this hypothesis through cross-level policy moderators.
+
+\paragraph{The moderation framework.}
+\begin{definition}[Policy moderator specification]\label{def:gamma}
+  For each margin $k \in \{1,2\}$, the state-specific deviation decomposes as
+  \begin{equation}\label{eq:gamma-decomp}
+    \bdelta_{k,s} = \bGamma_k\,\bv_s + \bepsilon_{k,s},
+  \end{equation}
+  where $\bGamma_k \in \R^{q \times Q}$ is the cross-level interaction matrix
+  and $\bepsilon_{k,s}$ is a residual state effect.
+  Stacking both margins, the residuals follow a joint distribution that
+  preserves cross-margin dependence:
+  \begin{equation}\label{eq:eps-stacked}
+    \bepsilon_s
+    \equiv \begin{pmatrix}\bepsilon_{1,s}\\\bepsilon_{2,s}\end{pmatrix}
+    \sim \Norm_{2q}\!\left(\mathbf{0},\;
+      \bSigma_\varepsilon
+      = \begin{pmatrix}
+        \bSigma_{\varepsilon,1} & \bSigma_{12}\\
+        \bSigma_{21} & \bSigma_{\varepsilon,2}
+      \end{pmatrix}\right),
+  \end{equation}
+  so that the full model estimates the residual cross-margin covariance
+  $\bSigma_{12} = \Cov(\bepsilon_{1,s},\, \bepsilon_{2,s})$
+  after removing the policy-explained component (see
+  \cref{prop:sigma12-nonid} and Supplementary Material~B).
+\end{definition}
+
+The state-level policy vector is
+$\bv_s \in \R^Q$ with $Q = 4$, consisting of an intercept and $Q - 1 = 3$
+Child Care and Development Fund (CCDF) policy instruments that directly affect
+the cost structure centers face for infant care.  The specific policy variables
+and their substantive roles are detailed in \cref{sec:application}.
+
+\paragraph{Nested model hierarchy.}
+The HBB framework nests a sequence of models with increasing complexity,
+summarized in~\cref{tab:model-hierarchy}.
+
+\begin{table}[ht]
+\centering
+\caption{Nested model hierarchy. Each model adds structure relative to its
+  predecessor.}\label{tab:model-hierarchy}
+\smallskip
+\small
+\begin{tabular}{@{}llp{0.38\textwidth}c@{}}
+\toprule
+Model & Structure & Question addressed & Approx.\ params \\
+\midrule
+M0 & Fixed effects only & National-level poverty reversal? & $11$ \\
+M1 & + Random intercepts$^{\dagger}$ & Does enrollment vary by state? & $116$ \\
+M2 & + State-varying coefs.\ & Does the reversal vary by state? & $\sim 576$ \\
+M3a & + Cross-margin cov.\ & Are the two margins linked? & $\sim 576$ \\
+M3b & + Policy moderators & Can policies explain state variation? & $\sim 626$ \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+{\footnotesize $^{\dagger}$M1 is obtained as a special case of M2 by
+  restricting the SVC to intercepts only ($q = 1$).}
+\end{table}
+
+Each transition addresses a question raised by its predecessor: M0 to M1 asks
+whether the baseline enrollment rate varies by state; M1 to M2, whether the
+reversal pattern varies by state; M2 to M3a, whether cross-margin
+covariance improves fit; and M3a to M3b, whether observable policies explain
+the state heterogeneity.
+
+\paragraph{Poverty coefficient expansion.}
+\begin{proposition}[Poverty coefficient expansion]\label{prop:poverty-expansion}
+  Under M3b, the total state-specific poverty coefficient on the extensive
+  margin is
+  \begin{equation}\label{eq:poverty-expansion}
+    \tilde{\alpha}_{\mathrm{pov},s}
+    = \underbrace{\alpha_{\mathrm{pov}}}_{\substack{\text{national} \\
+    \text{average}}}
+    + \underbrace{\bgamma_{1,\mathrm{pov}}\t\bv_s}_{\substack{\text{policy-explained}
+    \\ \text{deviation}}}
+    + \underbrace{\varepsilon_{1,\mathrm{pov},s}}_{\substack{\text{residual}
+    \\ \text{state effect}}},
+    %% Note: \varepsilon_{k,\cdot,s} denotes residual state deviations
+    %% (distinct from the elasticity \varepsilon_h in Proposition~\ref{prop:elasticity}).
+  \end{equation}
+  where $\bgamma_{1,\mathrm{pov}} = (\gamma_{1,2,1},\ldots,\gamma_{1,2,Q})\t$
+  is the second row of $\bGamma_1$. Analogously, the intensive-margin
+  counterpart is
+  $\tilde{\beta}_{\mathrm{pov},s} = \beta_{\mathrm{pov}} +
+  \bgamma_{2,\mathrm{pov}}\t\bv_s + \varepsilon_{2,\mathrm{pov},s}$.
+\end{proposition}
+
+\cref{prop:poverty-expansion} decomposes the state-specific poverty effect into
+three interpretable components: a national average ($\alpha_{\mathrm{pov}}$), a
+policy-explained deviation ($\bgamma_{1,\mathrm{pov}}\t\bv_s$), and a residual
+idiosyncrasy ($\varepsilon_{1,\mathrm{pov},s}$).  The variance of the
+state-specific poverty coefficient decomposes correspondingly as
+$\Var(\tilde{\alpha}_{\mathrm{pov},s}) =
+\bgamma_{1,\mathrm{pov}}\t\,\Var(\bv_s)\,\bgamma_{1,\mathrm{pov}}
++ (\bSigma_{\varepsilon,1})_{\mathrm{pov,pov}}$,
+partitioning between-state variation into policy-explained and residual
+components.
+
+\paragraph{Marginal effect decomposition.}
+To translate model parameters into policy-relevant quantities, we decompose the
+total effect of any covariate $x_k$ on expected enrollment into access and
+intensity channels.
+
+\begin{proposition}[Log-access and log-intensity decomposition]
+  \label{prop:lae-lie}
+  For provider $i$ in state $s$, the marginal effect of covariate $x_k$ on
+  log expected enrollment decomposes as
+  \begin{equation}\label{eq:lae-lie}
+    \frac{\partial \log \E[Y_i]}{\partial x_{i,k}}
+    = \underbrace{(1 - q_i)\,\tilde{\alpha}_{k,s}}_{\LAE_k}
+    \;+\;
+    \underbrace{(1 - \mu_i)\,\varepsilon_{h,i}\,\tilde{\beta}_{k,s}}_{\LIE_k},
+  \end{equation}
+  where $\LAE_k$ is the log access effect and $\LIE_k$ is the log
+  intensity effect, with $\varepsilon_{h,i} = 1 - \omega_i$ from
+  \cref{prop:elasticity}.
+\end{proposition}
+
+\begin{proof}
+  Since $\log\E[Y_i] = \log q_i + \log n_i + \log h_i$ and $n_i$ is fixed,
+  the chain rule gives two terms. For the access term, the logit link yields
+  $\partial(\log q_i)/\partial x_{i,k} = (1 - q_i)\,\tilde{\alpha}_{k,s}$.
+  For the intensity term,
+  $\partial(\log h_i)/\partial x_{i,k}
+  = \varepsilon_{h,i}\,(1-\mu_i)\,\tilde{\beta}_{k,s}$,
+  using the logistic derivative $\partial\mu/\partial\eta = \mu(1-\mu)$
+  and the elasticity definition
+  $\varepsilon_{h} = \mu\,\partial(\log h)/\partial\mu$.
+\end{proof}
+
+\paragraph{Concrete interpretation.}
+At the sample average ($q \approx 0.64$, $\mu \approx 0.30$,
+$\varepsilon_h \approx 0.93$) with population-average coefficients
+$\alpha_{\mathrm{pov}} = -0.324$ and $\beta_{\mathrm{pov}} = +0.090$:
+$\LAE_{\mathrm{pov}} = (1 - 0.64)(-0.324) = -0.117$ and
+$\LIE_{\mathrm{pov}} = (1 - 0.30)(0.93)(0.090) = +0.058$.
+The net effect is $-5.9\%$: the access barrier dominates, but the intensity
+response offsets nearly half.  Three features of the decomposition merit
+emphasis: it is \emph{exactly additive} on the log scale, both multipliers
+$(1-q_i)$ and $(1-\mu_i)\varepsilon_{h,i}$ are positive and bounded so that
+the sign of each component is determined solely by the coefficient sign, and
+the reversal pattern is confirmed as a coefficient-level phenomenon consistent
+with~\cref{thm:monotonicity}.
+
+%% ---------------------------------------------------------------------------
+%% 3.5 Survey-Weighted Pseudo-Posterior and Sandwich Correction
+%% ---------------------------------------------------------------------------
+
+\subsection{Survey-weighted pseudo-posterior and sandwich correction}
+\label{sec:survey}
+
+The NSECE 2019 employs a stratified multistage cluster design with 30 strata,
+415 primary sampling units (PSUs), and sampling weights ranging from 1 to 462
+(Kish $\ESS = 1{,}803$; $\DEFF = 3.76$). Under informative sampling designs,
+ignoring these weights can bias point estimates and produce
+miscalibrated credible intervals
+\citep{PfeffermannEtAl1998}. Following~\citet{SavitskyToth2016} and
+\citet{WilliamsSavitsky2021}, we adopt a pseudo-posterior approach with
+post-hoc sandwich correction
+\citep[see also][for a general treatment of weighting in multilevel
+models]{RabeHeskethSkrondal2006}.
+
+\paragraph{Pseudo-log-likelihood.}
+Define the weighted log-likelihood
+\begin{equation}\label{eq:pseudo-loglik}
+  \ell^{(w)}(\btheta)
+  = \sum_{i=1}^{N} \tilde{w}_i \log f_{\HBB}(y_i \mid \btheta),
+\end{equation}
+where $\tilde{w}_i = w_i N / \sum_j w_j$ are the normalized survey weights.
+
+\begin{theorem}[Pseudo-posterior propriety]\label{thm:propriety}
+  Under a proper prior $\pi(\btheta)$, the pseudo-posterior
+  \begin{equation}\label{eq:pseudo-posterior}
+    \pi^{(w)}(\btheta \mid \by)
+    \propto \exp\!\bigl(\ell^{(w)}(\btheta)\bigr)\,\pi(\btheta)
+  \end{equation}
+  is proper for any set of positive, finite weights $\{w_i\}_{i=1}^N$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+  Since $f_{\HBB}(y_i \mid \btheta) \in (0,1]$ and $\tilde{w}_i > 0$,
+  each weighted factor satisfies $f_i^{\tilde{w}_i} \le 1$. Hence
+  $\int \exp(\ell^{(w)})\,\pi(\btheta)\,d\btheta
+  \le \int \pi(\btheta)\,d\btheta = 1 < \infty$, using
+  the properness of $\pi(\btheta)$. The full proof, which verifies that the
+  marginal likelihood is strictly positive, appears in Supplementary
+  Material~C.
+\end{proof}
+
+\begin{proposition}[Weighted separability]\label{prop:weighted-sep}
+  The weighted log-likelihood retains the two-part decomposition:
+  \begin{equation}\label{eq:weighted-sep}
+    \ell^{(w)}(\btheta)
+    = \ell_{\mathrm{ext}}^{(w)}(\balpha)
+    + \ell_{\mathrm{int}}^{(w)}(\bbeta, \kappa),
+  \end{equation}
+  where
+  $\ell_{\mathrm{ext}}^{(w)} = \sum_i \tilde{w}_i[z_i\log q_i + (1-z_i)\log(1-q_i)]$
+  and
+  $\ell_{\mathrm{int}}^{(w)} = \sum_{i:\,z_i=1}
+  \tilde{w}_i[\log f_{\BetaBin}(y_i \mid n_i,\mu_i,\kappa) - \log(1-p_{0,i})]$.
+\end{proposition}
+
+\begin{proof}
+  Weighting by $\tilde{w}_i > 0$ multiplies each observation's log-density
+  by a positive scalar, which cannot introduce functional dependence between
+  parameters that were already in separate additive components.
+\end{proof}
+
+\paragraph{Bernstein--von Mises (BvM) condition.}
+The weight ratio $w_{\max}/w_{\min} = 462$ exceeds $N^{1/2} \approx 82.5$.
+The finite-sample diagnostic
+$\delta \approx \log(462)/\log(6{,}785) \approx 0.695 > 0.5$ suggests that
+the pseudo-posterior variance may understate the true sampling variability,
+motivating the sandwich correction below.
+
+\paragraph{Sandwich variance.}
+Define the observed Hessian and cluster-robust outer product:
+\begin{align}
+  \mathbf{H}_{\mathrm{obs}}
+    &= -\sum_{i=1}^{N}\tilde{w}_i\,
+       \frac{\partial^2\log f_{\HBB}(y_i \mid \btheta)}
+            {\partial\btheta\,\partial\btheta\t}
+       \bigg|_{\btheta = \hat{\btheta}},
+    \label{eq:H-obs} \\[6pt]
+  \mathbf{J}_{\mathrm{cluster}}
+    &= \sum_{c=1}^{C}\mathbf{s}_c\,\mathbf{s}_c\t,
+    \qquad
+    \mathbf{s}_c
+    = \sum_{i \in \text{PSU}_c}\tilde{w}_i\,
+      \frac{\partial\log f_{\HBB}(y_i \mid \btheta)}{\partial\btheta}
+      \bigg|_{\btheta = \hat{\btheta}},
+    \label{eq:J-cluster}
+\end{align}
+where $C = 415$ is the number of primary sampling units and $\hat{\btheta}$ is
+the posterior mean. The hurdle separability implies that
+$\mathbf{H}_{\mathrm{obs}}$ is block-diagonal between the extensive and
+intensive margin parameters; however, $\mathbf{J}_{\mathrm{cluster}}$ is
+\emph{not} block-diagonal, because a single PSU contributes scores from both
+margins simultaneously.
+
+\begin{remark}[Simplified exposition]\label{rem:J-simplified}
+  \Cref{eq:J-cluster} uses the unstratified form for expositional
+  clarity.  The implemented estimator is the stratified cluster-robust
+  form in~\cref{smc:prop-cluster-robust}, which centers PSU scores
+  within the $H = 30$ NSECE strata and applies finite-population
+  correction factors $C_h/(C_h - 1)$.
+\end{remark}
+
+The design-consistent sandwich variance is
+\begin{equation}\label{eq:V-sand}
+  \mathbf{V}_{\mathrm{sand}}
+  = \mathbf{H}_{\mathrm{obs}}^{-1}\,
+    \mathbf{J}_{\mathrm{cluster}}\,
+    \mathbf{H}_{\mathrm{obs}}^{-1}.
+\end{equation}
+
+\begin{theorem}[Cholesky affine transformation]\label{thm:cholesky}
+  Let $\hat{\btheta}$ be the posterior mean, $\mathbf{L}_{\mathrm{sand}}$ the
+  lower Cholesky factor of $\mathbf{V}_{\mathrm{sand}}$, and
+  $\mathbf{L}_{\mathrm{MCMC}}$ the lower Cholesky factor of the MCMC posterior
+  covariance $\bSigma_{\mathrm{MCMC}}$. The transformed draws
+  \begin{equation}\label{eq:cholesky-transform}
+    \btheta^{*(m)}
+    = \hat{\btheta}
+    + \mathbf{L}_{\mathrm{sand}}\,\mathbf{L}_{\mathrm{MCMC}}^{-1}
+      \bigl(\btheta^{(m)} - \hat{\btheta}\bigr),
+    \qquad m = 1,\ldots,M,
+  \end{equation}
+  satisfy $\E[\btheta^*] = \hat{\btheta}$ (mean-preserving) and
+  $\Cov(\btheta^*) = \mathbf{V}_{\mathrm{sand}}$
+  (design-consistent covariance).  The transformation matches
+  the target covariance structure; Wald confidence intervals
+  based on the marginal variances are invariant to the choice
+  of transformation matrix.
+\end{theorem}
+
+\paragraph{Computational remark.}
+The observed Hessian $\mathbf{H}_{\mathrm{obs}}$ is computed as the negative
+second derivative of the weighted pseudo-log-likelihood~\eqref{eq:H-obs},
+excluding prior curvature, evaluated at the posterior mean,
+\emph{not} from the MCMC sample covariance. This distinction is critical in
+hierarchical models: the marginal posterior variance
+$\bSigma_{\mathrm{MCMC}}$ of the fixed effects integrates over the
+random-effect distribution, producing intervals much wider than the
+conditional precision $\mathbf{H}_{\mathrm{obs}}^{-1}$. In our
+application, the hierarchical variance ratio
+$(\bSigma_{\mathrm{MCMC}})_{pp}/(\mathbf{H}_{\mathrm{obs}}^{-1})_{pp}$
+exceeds 600 for most fixed effects---a consequence of the hierarchical
+structure, not prior domination---confirming that the standard substitution
+$\bSigma_{\mathrm{MCMC}} \approx \mathbf{H}^{-1}$ fails in hierarchical
+models.
+
+\paragraph{Design effect ratio and block-wise correction strategy.}
+As a parameter-specific diagnostic extending the classical design
+effect~\citep{RaoScott1981, PfeffermannEtAl1998} to individual model
+parameters, define the design effect ratio for parameter $p$ as
+\begin{equation}\label{eq:der}
+  \DER_{p}
+  = \frac{[\mathbf{V}_{\mathrm{sand}}]_{pp}}{[\mathbf{H}_{\mathrm{obs}}^{-1}]_{pp}}.
+\end{equation}
+The $\DER_p$ quantifies the factor by which the survey design inflates
+the variance of the $p$-th parameter beyond the data-only (SRS) variance
+and motivates the following three-tier correction strategy.
+The Cholesky transformation~\eqref{eq:cholesky-transform} is applied
+in blocks:
+\begin{itemize}[nosep]
+  \item \emph{Fixed effects} $(\balpha, \bbeta, \log\kappa)$: full sandwich
+    correction. The DER ranges from 1.14 to 4.18 in our data
+    (mean 2.11, consistent with the Kish $\DEFF$ of 3.76). The corresponding
+    confidence interval inflation factors are
+    $\sqrt{\DER} \in [1.07, 2.04]$.
+  \item \emph{Random effects} $(\bdelta_{k,s})$: partial correction guided by
+    the DER. States with low effective sample size show DER near one (the prior
+    dominates), while large states show DER up to four.
+  \item \emph{Hyperparameters} $(\bSigma_\delta, \bGamma_k)$: no correction
+    applied. The sandwich estimator is not applicable to variance components
+    estimated from between-state variation; the DER concept does not extend to
+    these parameters. Consequently, posterior intervals for hyperparameters are
+    model-based summaries whose validity relies on correct specification of the
+    hierarchical distribution, not on design consistency. When a hyperparameter
+    is substantively central---as $\bSigma_{12}$ is in this
+    application (\cref{prop:sigma12-nonid,prop:sigma12-id})---prior
+    sensitivity analysis is recommended.
+\end{itemize}
+
+\begin{remark}[Block-wise caveat]\label{rem:blockwise}
+  The block-wise application of~\cref{thm:cholesky} ignores cross-block
+  covariance between fixed and random effects, which can be non-negligible
+  for the three to five largest states where within-state ESS approaches $N_s$.
+  A sensitivity analysis comparing block-wise and joint correction is reported
+  in Supplementary Material~C.  The finite-sample coverage of sandwich-corrected
+  intervals is evaluated in the simulation study (\cref{sec:simulation}).
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%% 3.6 Prior Specification and Computation
+%% ---------------------------------------------------------------------------
+
+\subsection{Prior specification and computation}\label{sec:priors}
+
+\paragraph{Prior hierarchy.}
+Each prior is chosen to be weakly informative---providing enough
+regularization to ensure computational stability and proper posteriors, while
+remaining vague enough that the data dominate in well-identified regions.
+\cref{tab:priors} summarizes the complete specification, following the
+recommendations of~\citet{GelmanEtAl2008} for regularized regression and
+\citet{Gelman2006} for variance components.
+
+\begin{table}[ht]
+\centering
+\caption{Prior specification. NCP = non-centered parameterization.}\label{tab:priors}
+\smallskip
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}llp{0.50\textwidth}@{}}
+\toprule
+Parameter & Prior & Justification \\
+\midrule
+$\balpha,\;\bbeta$ & $\Norm(\mathbf{0},\;2^2\,\mathbf{I}_P)$ &
+  Weakly informative on logit scale; \\
+  & & $\pm 4$ logit units covers most of the probability range \\[3pt]
+$\operatorname{vec}(\bGamma_k)$ & $\Norm(0,\;1^2)$ &
+  Diffuse; allows moderate cross-level effects \\[3pt]
+$\log\kappa$ & $\Norm(2,\;1.5^2)$ &
+  Centered at moderate overdispersion ($\kappa \approx 7.4$); \\
+  & & 95\% prior interval $\kappa \in [0.4, 140]$ \\[3pt]
+$\boldsymbol{\tau}$ (SDs of $\bSigma_\delta$) &
+  $\HalfNormal(0,1)$ &
+  Regularizing; shrinkage-friendly \\[3pt]
+$\mathbf{R}_\varepsilon$ (correlations) & $\LKJ(2)$ \citep{LewandowskiEtAl2009} &
+  Mild shrinkage toward identity \\[3pt]
+$\bz_s$ (NCP auxiliaries) & $\Norm(\mathbf{0},\;\mathbf{I}_{2q})$ &
+  Standard normal (non-centered parameterization) \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+\paragraph{Prior for $\log\kappa$.}
+We center the log-concentration prior at $2$ (corresponding to $\kappa \approx 7.4$)
+because preliminary analysis of IT enrollment counts suggests moderate
+overdispersion: the variance-to-mean ratio across participating centers is
+approximately 7--15 times the binomial baseline, consistent with $\kappa$ in the
+range 5--20.
+The scale of 1.5 is generous, accommodating $\kappa$ values from less than~1
+(near-maximum overdispersion) to over~140 (approaching the binomial).
+
+\paragraph{Identification.}
+\begin{theorem}[Identification]\label{thm:identification}
+  Suppose the following conditions hold:
+  \begin{enumerate}[label=\textup{(C\arabic*)},nosep]
+    \item The design matrices have full rank:
+      $\mathrm{rank}(\mathbf{X}) = P$ and $\mathrm{rank}(\mathbf{V}) = Q$.
+    \item Each state $s$ has at least $q$ providers with linearly independent
+      covariate vectors $\bx_i^{(r)}$, with at least one zero and at least
+      $q$ positive responders.
+    \item $n_i \ge 3$ for all $i$ with $z_i = 1$, and there exist providers
+      $i, j$ with $s[i] = s[j]$ and $n_i \ne n_j$ in each state.
+    \item The prior $\pi(\btheta)$ has full support on the parameter space.
+  \end{enumerate}
+  Then the full parameter vector $\btheta = (\balpha, \bbeta, \kappa,
+  \{\bdelta_s\}, \bSigma_\delta, \{\bGamma_k\})$ is identified under the
+  posterior.
+\end{theorem}
+
+\noindent\emph{Interpretation.}
+The hurdle likelihood identifies the state-specific \emph{total}
+coefficients $\tilde{\alpha}_{j,s}$ and $\tilde{\beta}_{j,s}$
+(\cref{eq:total-coef}) under standard rank and replication
+conditions; the hierarchical layer then pins down their
+decomposition into population-average effects~$\balpha^{(r)}$,
+$\bbeta^{(r)}$, policy moderation~$\bGamma_k$, and residual state
+deviations~$\bepsilon_{k,s}$.
+See Supplementary Material~B for the complete proof.
+
+Condition (C3) is critical for the intensive margin: with $n_i = 1$, the
+intensity function $h \equiv 1$ and the parameters $\mu_i$ and $\kappa$
+enter the likelihood only through $1 - p_0 = \mu_i$, so $\kappa$ is not
+identified. With $n_i = 2$, $p_0$ depends on both $\mu$ and $\kappa$, but the
+single constraint $p_0(2,\mu,\kappa) = (1-\mu)[(1-\mu)\kappa+1]/(\kappa+1)$ determines
+only one degree of freedom. For $n_i \ge 3$, the product formula
+\eqref{eq:p0} provides enough structure to separate $\mu$ from $\kappa$. The
+full proof appears in Supplementary Material~B.
+
+\paragraph{Estimation pipeline.}
+\cref{alg:estimation} outlines the complete estimation and inference procedure.
+
+\begin{algorithm}[ht]
+\caption{Estimation pipeline for the HBB model}\label{alg:estimation}
+\begin{algorithmic}[1]
+  \State \textbf{Data preparation:} Normalize weights
+    $\tilde{w}_i = w_i N / \textstyle\sum_j w_j$; standardize covariates.
+  \State \textbf{Compile:} Stan model with NCP and \texttt{lbeta()} for numerical
+    stability.
+  \State \textbf{MCMC sampling:} Run 4 chains~\citep[NUTS;][]{Hoffman2014}
+    with \texttt{adapt\_delta} $= 0.95$; see Supplementary Material~E for
+    iteration counts and tree-depth settings.
+  \State \textbf{Convergence diagnostics:} Verify $\hat{R} < 1.01$,
+    $\ESS_{\mathrm{bulk}} > 400$~\citep{Vehtari2021}, and zero divergent transitions for all
+    parameters.
+  \State \textbf{Score extraction:} Extract observation-level scores
+    $\partial\log f_{\HBB} / \partial\btheta$ computed in Stan's
+    \texttt{generated quantities} block, evaluated at each MCMC draw.
+  \State \textbf{Sandwich computation:} Form $\mathbf{H}_{\mathrm{obs}}$
+    and $\mathbf{J}_{\mathrm{cluster}}$ via~\cref{eq:H-obs,eq:J-cluster};
+    compute $\mathbf{V}_{\mathrm{sand}}$ via~\cref{eq:V-sand}.
+  \State \textbf{Cholesky transformation:} Apply
+    \cref{eq:cholesky-transform} block-wise to obtain design-corrected
+    posterior draws $\{\btheta^{*(m)}\}$.
+  \State \textbf{Model comparison:} Compute LOO-CV
+    \citep{VehtariEtAl2017} across M0--M3b; report
+    $\widehat{\elpd}_{\mathrm{loo}}$ and Pareto-$k$ diagnostics.
+\end{algorithmic}
+\end{algorithm}
+
+The models are fitted sequentially from M0 through M3b, using the posterior
+mean of each simpler model as the starting point for its successor.
+This warm-start strategy reduces total computation time by approximately
+40\% compared with cold starts.  Full MCMC settings and convergence diagnostics
+are reported in Supplementary Material~E; score computation details and
+closed-form expressions for the sandwich ingredients are documented in the
+\textsf{hurdlebb} package vignette~\citep{hurdlebb2026}.
+
+The finite-sample properties of this estimation pipeline---particularly
+the sandwich correction's behavior under realistic survey designs---are
+evaluated in the simulation study that follows.

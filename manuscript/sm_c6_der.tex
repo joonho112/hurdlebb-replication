@@ -1,0 +1,190 @@
+%% =============================================================================
+%% sm_c6_der.tex — SM-C, Subsection C.6: Design Effect Ratio
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 1262--1291 (Definition 4.4, Proposition 4.4, Remark 4.12)
+%% Corrections applied: T2-2 (DER heuristic label + overestimation),
+%%   T2-4 (intercept identifiability)
+%% =============================================================================
+
+\subsection{Design effect ratio classification and diagnostics}
+\label{smc:der}
+
+The sandwich variance $\mathbf{V}_{\mathrm{sand}}$~\eqref{eq:V-sand}
+and the Cholesky transformation~\eqref{eq:cholesky-transform} need not
+be applied uniformly to every parameter.  The design effect ratio
+(DER), defined in the main text~\eqref{eq:der}, provides a
+parameter-specific diagnostic for the magnitude of the design effect:
+\begin{equation}\label{smc:eq-der-recall}
+  \DER_{p}
+  = \frac{[\mathbf{V}_{\mathrm{sand}}]_{pp}}
+         {[\mathbf{H}_{\mathrm{obs}}^{-1}]_{pp}}.
+\end{equation}
+When $\DER_p \approx 1$, the model-based variance already
+approximates the design-consistent variance and no correction is
+needed; when $\DER_p$ is substantially larger than~1, the Cholesky
+correction is essential for calibrated inference.
+
+%% ---------------------------------------------------------------------------
+%%  DER classification
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[DER classification of parameters]
+\label{smc:prop-der-classification}
+  The parameters of the HBB model fall into three categories with
+  respect to the Cholesky correction\textup{:}
+  \begin{enumerate}[label=\textup{(\roman*)},nosep]
+    \item \emph{Fixed effects}
+      $\boldsymbol{\xi}
+      = (\balpha\t,\bbeta\t,\log\kappa)\t$\textup{:}
+      full correction required.  $\DER_p$ reflects the joint effect of
+      unequal weights and within-PSU clustering on the pseudo-likelihood
+      information.  Empirically, $\DER_p \in [1.14,\,4.18]$
+      (mean~$2.11$), consistent with the Kish $\DEFF = 3.79$.
+
+    \item \emph{State random effects}
+      $\bepsilon_s$\textup{:} partial correction.
+      The posterior variance of $\bepsilon_s$ blends
+      likelihood-based information (affected by the design) with
+      shrinkage toward the prior mean $\bGamma_k\bv_s$ (unaffected).
+      States in which the prior dominates ($\ESS_s \ll q$) have
+      $\DER_s \approx 1$; states in which the data dominate
+      ($\ESS_s \gg q$) may have $\DER_s > 3$.
+
+    \item \emph{Hyperparameters}
+      $(\bGamma_k, \bSigma_\varepsilon)$\textup{:} no correction.
+      The sandwich estimator is not applicable to variance components
+      estimated from between-state variation; the DER concept does not
+      extend to these parameters. Posterior intervals for
+      hyperparameters are therefore model-based summaries whose
+      calibration depends on correct specification of the hierarchical
+      distribution.
+  \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+  Part~(i) follows because the fixed-effect block of
+  $\mathbf{H}_{\mathrm{obs}}$ and $\mathbf{J}_{\mathrm{cluster}}$
+  depends directly on the observation-level weights $\tilde{w}_i$ and
+  PSU aggregation, so $\DER_p$ is determined by the design effect.
+  Part~(ii) follows from the posterior precision decomposition: for
+  the normal--normal conjugate approximation, the posterior precision
+  of $\bepsilon_s$ is the sum of the data precision (design-affected)
+  and the prior precision (design-free).  When the prior precision
+  dominates, the posterior variance is insensitive to the design, and
+  $\DER_s \approx 1$.
+  Part~(iii) holds because $\bGamma_k$ and $\bSigma_\varepsilon$ are
+  identified from the between-state variation of the $S = 51$
+  state-level random effects.  The survey design affects
+  \emph{within-state} estimation but does not alter the between-state
+  variance structure; hence the sandwich correction has no natural
+  analogue for these parameters.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  DER heuristic for random effects (T2-2)
+%% ---------------------------------------------------------------------------
+
+\noindent
+\textbf{Heuristic C.1} (Linear interpolation for random-effect DER).
+\label{smc:heuristic-der-re}%
+With shrinkage factor
+$\lambda_{s,pp}
+= \sigma_\varepsilon^2 / (\sigma_\varepsilon^2 + \sigma_e^2 / \ESS_s)$,
+the DER for $\varepsilon_{s,p}$ is approximately
+\begin{equation}\label{smc:eq-der-heuristic}
+  \DER_{s,p}
+  \;\approx\;
+  1 + \lambda_{s,pp}\,(\DEFF_s - 1),
+\end{equation}
+interpolating between $\DER_{s,p} = 1$ (strong shrinkage) and
+$\DER_{s,p} = \DEFF_s$ (no shrinkage).
+
+\begin{remark}[Overestimation of the linear heuristic]
+\label{smc:rem-heuristic-overestimate}
+  {\upshape\textbf{(Correction T2-2.)}}
+  The linear interpolation~\eqref{smc:eq-der-heuristic} is a
+  \emph{heuristic}, not an exact result.  In the one-dimensional
+  normal--normal conjugate model, the exact DER is
+  \begin{equation}\label{smc:eq-der-exact}
+    \DER_{s,p}^{\textup{exact}}
+    = \frac{1 + \lambda_{s,pp}\,\DEFF_s}
+           {(1 + \lambda_{s,pp})^2},
+  \end{equation}
+  which is always $\leq$~\eqref{smc:eq-der-heuristic}.  The
+  discrepancy is largest at intermediate shrinkage
+  ($\lambda_{s,pp} \approx 0.5$), where the linear heuristic can
+  overestimate by up to~50\%.  For practical purposes, the heuristic
+  remains useful as a conservative upper bound that quickly
+  identifies parameters needing correction; the exact
+  formula~\eqref{smc:eq-der-exact} can be computed alongside as a
+  more accurate benchmark.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  DER diagnostic thresholds
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[DER diagnostic thresholds]
+\label{smc:prop-der-diagnostic}
+  As a post-estimation diagnostic, compute $\DER_p$ for each
+  parameter and classify as follows\textup{:}
+  \begin{itemize}[nosep]
+    \item $\DER_p \in [0.8,\;1.2]$\textup{:}
+      \emph{design-insensitive}.  The naive credible interval is
+      adequately calibrated; sandwich correction is optional.
+    \item $\DER_p \in (1.2,\;1.5]$\textup{:}
+      \emph{moderate inflation}.  The confidence-interval width
+      increases by $\sqrt{1.5} \approx 22\%$; correction is
+      recommended.
+    \item $\DER_p > 1.5$\textup{:}
+      \emph{design-sensitive}.  The sandwich-corrected variance should
+      be used as the primary inferential summary.
+  \end{itemize}
+  In the NSECE application, all 11 fixed-effect parameters have
+  $\DER_p > 1.14$, placing them in the moderate-to-sensitive range.
+\end{proposition}
+
+%% ---------------------------------------------------------------------------
+%%  Intercept identifiability remark (T2-4)
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Intercept identifiability under DER correction]
+\label{smc:rem-intercept-id}
+  {\upshape\textbf{(Correction T2-4.)}}
+  Because the policy moderator vector $\bv_s$ includes an intercept
+  column (see \cref{sec:policy}), the fixed
+  intercept~$\alpha_1$ and the first column of $\bGamma_k$ have
+  partially overlapping roles: the state-specific intercept is
+  $\alpha_1 + \gamma_{k,1,1} + \varepsilon_{k,1,s}$.  The DER
+  for~$\alpha_1$ includes variance attributable to both the design
+  effect on the likelihood and the partial confounding with
+  $\gamma_{k,1,1}$.  Formally, the decomposition
+  \begin{equation}\label{smc:eq-intercept-decomp}
+    [\mathbf{V}_{\mathrm{sand}}]_{\alpha_1,\alpha_1}
+    = [\mathbf{V}_{\mathrm{sand}}^{\textup{design}}]_{\alpha_1,\alpha_1}
+    + [\mathbf{V}^{\textup{id}}]_{\alpha_1,\alpha_1}
+  \end{equation}
+  is not cleanly separable; the DER should be interpreted with caution
+  for intercept parameters.  The soft identification provided by the
+  tighter prior $\Norm(0, 0.5^2)$ on the intercept column of
+  $\bGamma_k$ (see \cref{sec:priors}) mitigates this issue by
+  attributing the cross-state mean to~$\alpha_1$ and treating
+  deviations as random effects.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  Computational savings
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Computational savings from DER classification]
+\label{smc:rem-computational-savings}
+  The three-way classification implies that the Cholesky
+  transformation~\eqref{eq:cholesky-transform} need only be applied
+  to the fixed-effect block ($\dim\boldsymbol{\xi} = 11$) and, for
+  the largest states, the random-effect blocks.  This reduces the
+  dimensionality of the Cholesky factorization from the full parameter
+  dimension ($\approx\!616$) to at most $11$--$20$, yielding
+  substantial computational savings.  The empirical DER values are
+  reported in the main text (\cref{tab:fixed-effects}).
+\end{remark}

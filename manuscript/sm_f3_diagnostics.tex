@@ -1,0 +1,114 @@
+%% =============================================================================
+%% sm_f3_diagnostics.tex — SM-F, Subsection F.3: Supplementary Diagnostics
+%% Body content only (\subsection level); parent structure in sm_f.tex
+%% =============================================================================
+
+\subsection{Supplementary diagnostic figures and design effect analysis}
+\label{smf:diagnostics}
+
+This section presents three supplementary figures that visualize
+bias, interval width, and design effects across all simulation
+scenarios, and a full table of design effect ratios (DER) for
+all 11 fixed-effect parameters.
+
+\paragraph{Relative bias distributions.}
+\Cref{smf:fig-bias} shows the distribution of relative bias
+across parameters and scenarios.  E-UW exhibits the largest
+absolute bias (especially for $\tau_{\mathrm{ext}}$ and
+$\tau_{\mathrm{int}}$ under S4), while E-WT/E-WS improve
+point estimation for fixed effects by incorporating survey
+weights.  For the poverty slopes $\alpha_{\mathrm{pov}}$ and
+$\beta_{\mathrm{pov}}$, the relative bias under E-WS remains
+below 15\% across all scenarios.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{SF7_simulation_bias.pdf}
+  \caption{Relative bias (RB, \%) by parameter, estimator, and
+    scenario.  Each panel corresponds to one of the five target
+    parameters.  Dot positions indicate relative bias; color
+    distinguishes scenarios (S0, S3, S4).  The vertical gray
+    line marks zero bias.}
+  \label{smf:fig-bias}
+\end{figure}
+
+\paragraph{Width ratio distributions.}
+\Cref{smf:fig-wr} displays the distribution of width ratios
+(WR = median CI width under E-WS / median CI width under E-WT)
+across replications.  The progressive inflation from S0 through
+S4 is clearly visible for all fixed-effect parameters.
+The width ratio for $\log\kappa$ is similar to or slightly larger
+than those for the poverty slopes, reflecting the nonlinear
+dispersion score (Appendix~B).  Hyperparameter
+width ratios are identically~$1.000$ (not shown) because no
+sandwich correction is applied.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{SF8_width_ratio_distribution.pdf}
+  \caption{Distribution of width ratios across $R = 200$
+    replications, by parameter and scenario.  Boxplots are overlaid
+    with violin plots to show the full distributional shape.  The
+    horizontal dashed line at WR = 1.0 marks the no-correction
+    reference.}
+  \label{smf:fig-wr}
+\end{figure}
+
+\paragraph{Design effect ratios.}
+\Cref{smf:fig-der} summarizes the simulation DER across all 11
+fixed-effect parameters (5 extensive, 5 intensive, and
+$\log\kappa$) and three scenarios.  The DER monotonically
+increases with the informativeness parameter
+$\rho_{\mathrm{inc}}$, consistent with the theoretical prediction
+in~\cref{smc:prop-der-classification}.  Urban density parameters
+exhibit the largest DER in all scenarios (mean 3.25 in S0 up to
+6.43 in S4), mirroring the empirical DER of~4.18 for
+$\alpha_{\mathrm{urb}}$ in the NSECE case study
+(\cref{smd:tab-der}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{SF9_DER_summary.pdf}
+  \caption{Design effect ratios (DER) by parameter and scenario.
+    Each dot represents the mean DER across 200 replications;
+    color distinguishes scenarios.  Parameters are grouped by
+    margin (extensive vs.\ intensive) with $\log\kappa$ as a
+    separate category.}
+  \label{smf:fig-der}
+\end{figure}
+
+\paragraph{Complete DER table.}
+The table below reports the full distribution of DER across
+replications for all 11 fixed-effect parameters and three
+scenarios.  The mean, median, standard deviation, and range
+(min--max) characterize the replication-to-replication
+variability.  Two patterns are noteworthy: (i)~the DER standard
+deviation increases with the scenario severity, indicating
+greater sampling variability under heavier design effects; and
+(ii)~the urban parameter consistently shows the widest DER
+range, reflecting the spatial concentration of urban providers
+that amplifies the design effect.
+
+{\small
+\input{Figures/ST8_DER_summary}
+}
+
+\paragraph{Cross-margin correlation recovery.}
+\cref{tab:rho-cross-sim} reports recovery of the cross-margin
+correlation $\rho_{\mathrm{cross}} = \operatorname{cor}(\delta_j^{\mathrm{ext}},
+\delta_j^{\mathrm{int}})$ using a plug-in estimator based on posterior
+mean random effects across $S = 51$ states.
+The unweighted estimator E-UW systematically overestimates
+$\rho_{\mathrm{cross}}$, with relative bias growing from $+84\%$ in
+S0 to $+127\%$ in S4.
+The weighted estimator E-WT shows moderate downward bias ($-26\%$ to
+$-45\%$), and E-WS is identical to E-WT because the Cholesky sandwich
+correction (\cref{thm:cholesky}) adjusts only fixed-effect covariances.
+Per-replication credible intervals are unavailable because full
+posterior draws of the correlation matrix $\Omega$ were not retained
+in the simulation archive; only frequentist summaries across
+replications are reported.
+
+{\small
+\input{Figures/ST_rho_cross}
+}

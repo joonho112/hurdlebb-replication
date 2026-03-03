@@ -1,0 +1,41 @@
+%% =============================================================================
+%% sm_c.tex — Supplementary Material C: Survey Design Theory
+%% Body content only (subsections); \section and \label defined in osm_body.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   Parts 2--4 (pseudo-posterior theory, sandwich, Cholesky, DER)
+%% Corrections applied: T1-1 (BvM reframe), T1-4 (MCMC vs ESS remark),
+%%   T2-1 (block-wise Cholesky caveat), T2-2 (DER heuristic),
+%%   T2-3 ("exactly" -> "in expectation"), T2-4 (intercept identifiability)
+%% =============================================================================
+
+This appendix develops the survey design theory underlying the sandwich
+variance estimator and the Cholesky affine transformation described in
+\cref{sec:model}. We begin with the formal pseudo-likelihood framework
+and the proof that the pseudo-posterior is proper
+(\cref{thm:propriety}), establish the Bernstein--von Mises conditions
+and their finite-sample diagnostic for the NSECE weights, derive the
+cluster-robust sandwich estimator and its block structure, provide the
+full proof of the Cholesky affine transformation
+(\cref{thm:cholesky}), and close with the design effect ratio
+classification and diagnostics. Throughout, we use the score functions
+and Fisher information results from~\cref{app:identification}
+(Supplementary Material~B) and the notation established in
+\cref{sec:model}.
+
+%% --- C.1: Pseudo-Likelihood and Separability ---
+\input{sm_c1_pseudo}
+
+%% --- C.2: Pseudo-Posterior Propriety ---
+\input{sm_c2_propriety}
+
+%% --- C.3: Bernstein--von Mises Approximation ---
+\input{sm_c3_bvm}
+
+%% --- C.4: Sandwich Variance Estimator ---
+\input{sm_c4_sandwich}
+
+%% --- C.5: Cholesky Affine Transformation ---
+\input{sm_c5_cholesky}
+
+%% --- C.6: Design Effect Ratio ---
+\input{sm_c6_der}

@@ -1,0 +1,89 @@
+%% =============================================================================
+%% sm_c2_propriety.tex — SM-C, Subsection C.2: Pseudo-Posterior Propriety
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 741--781 (Definition 3.9, Theorem 3.1, Remarks 3.8--3.9)
+%% =============================================================================
+
+\subsection{Pseudo-posterior propriety}
+\label{smc:propriety}
+
+We now provide the complete proof of~\cref{thm:propriety}, which was
+stated with a sketch in~\cref{sec:survey}.
+
+\begin{proof}[Proof of \textup{\cref{thm:propriety}}]
+  We verify that the pseudo-posterior
+  \[
+    \pi^{(w)}(\btheta \mid \by) \propto
+    \exp\bigl[\ell^{(w)}(\btheta)\bigr]\,\pi(\btheta)
+  \]
+  is integrable over the parameter space.
+
+  \textup{\textbf{Step 1} (Boundedness of the pseudo-likelihood).}
+  For each observation $i$, the HBB probability satisfies
+  $f_{\HBB}(y_i \mid \btheta) \in (0, 1]$ for all $\btheta$ in the
+  interior of the parameter space.  Since $\tilde{w}_i > 0$, we have
+  $f_i^{\tilde{w}_i} \le 1$ whenever $f_i \le 1$.  Therefore
+  \[
+    \exp\bigl[\ell^{(w)}(\btheta)\bigr]
+    = \prod_{i=1}^{N} f_i^{\tilde{w}_i}
+    \le 1
+    \qquad \text{for all } \btheta.
+  \]
+
+  \textup{\textbf{Step 2} (Properness of the prior).}
+  Each component of the prior $\pi(\btheta)$ is a proper distribution:
+  \begin{itemize}[nosep]
+    \item $\balpha, \bbeta \sim \Norm(\mathbf{0},\; 2^2\,\mathbf{I}_P)$
+      \citep{GelmanEtAl2008}: proper with finite variance;
+    \item $\boldsymbol{\tau} \sim \HalfNormal(0, 1)$ componentwise:
+      proper on $\R_{>0}$;
+    \item $\mathbf{R}_\varepsilon \sim \LKJ(2)$
+      \citep{LewandowskiEtAl2009}: proper over the space of
+      $2q \times 2q$ correlation matrices;
+    \item $\log\kappa \sim \Norm(2,\; 1.5^2)$: proper.
+  \end{itemize}
+  The joint prior is a product of proper distributions, hence proper:
+  $\int \pi(\btheta)\,d\btheta = 1$.
+
+  \textup{\textbf{Step 3} (Integrability).}
+  Combining Steps~1 and~2:
+  \[
+    \int \exp\bigl[\ell^{(w)}(\btheta)\bigr]\,\pi(\btheta)\,d\btheta
+    \;\le\;
+    \int 1 \cdot \pi(\btheta)\,d\btheta
+    = 1 < \infty.
+  \]
+  Moreover, $\exp[\ell^{(w)}(\btheta)] > 0$ on the interior of the
+  parameter space (since all probability terms $f_i$ are strictly
+  positive there), so the pseudo-posterior is non-degenerate.
+\end{proof}
+
+\begin{remark}[Weight-invariance of propriety]
+\label{smc:rem-weight-invariance}
+  The proof above does not depend on the specific values or
+  normalization of the weights---only on their positivity and
+  finiteness.  Propriety therefore holds regardless of whether the
+  weights are normalized to sum to~$N$, to sum to the population size
+  $\hat{M}$, or under any other positive scaling.  However, the
+  \emph{shape} and \emph{concentration} of the pseudo-posterior depend
+  critically on the normalization convention, as discussed in
+  \cref{smc:rem-normalization}: the sum-to-$\hat{M}$ convention
+  produces extreme overconcentration, while the sum-to-$N$ convention
+  preserves the information content of the actual sample.
+\end{remark}
+
+\begin{remark}[Contrast with improper priors]
+\label{smc:rem-improper-priors}
+  With improper (flat) priors on the regression coefficients,
+  propriety would require the pseudo-likelihood to be integrable on
+  its own---that is, $\int \exp[\ell^{(w)}(\btheta)]\,d\btheta < \infty$.
+  In this setting the effective sample size (not the nominal sample
+  size) governs integrability.  With $\ESS \approx 1{,}797$ and
+  $\dim(\btheta) \le 606$, integrability would likely hold, but the
+  formal verification is more delicate: it requires confirming that the
+  weighted Hessian has full rank at the pseudo-MLE for every parameter
+  block.  The use of proper priors sidesteps this issue entirely,
+  ensuring propriety for \emph{any} positive weight configuration
+  without conditions on the data.
+\end{remark}

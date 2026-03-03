@@ -1,0 +1,62 @@
+%% =============================================================================
+%% sm_c1_pseudo.tex — SM-C, Subsection C.1: Pseudo-Likelihood and Separability
+%% Body content only (\subsection level); parent structure in sm_c.tex
+%% Primary source: dev/log/06_research-notes-survey-design-pseudo-posterior.qmd
+%%   lines 570--660 (normalization, separability, weighted scores)
+%% =============================================================================
+
+\subsection{Pseudo-likelihood and separability}
+\label{smc:pseudo-lik}
+
+We summarize the pseudo-likelihood structure
+from~\cref{sec:survey}.
+By~\cref{prop:weighted-sep}, the decomposition
+$\ell^{(w)}
+ = \ell_{\mathrm{ext}}^{(w)}
+ \allowbreak+ \ell_{\mathrm{int}}^{(w)}$
+holds with weights
+$\tilde{w}_i = w_i N / \sum_j w_j$.
+We record three clarifying remarks.
+
+\begin{remark}[Weight normalization]\label{smc:rem-normalization}
+  Two normalization conventions appear in the survey literature.
+  The \emph{sum-to-$N$} convention, $\tilde{w}_i = w_i N / \sum_j w_j$
+  so that $\sum_i \tilde{w}_i = N$, is adopted throughout and is standard
+  in the Bayesian pseudo-posterior literature
+  \citep{SavitskyToth2016,WilliamsSavitsky2021}.
+  The alternative \emph{sum-to-$\hat{M}$} convention retains unnormalized
+  weights $\tilde{w}_i = w_i$, which for the NSECE gives
+  $\sum_i w_i \approx 119{,}593$.  Under this convention the
+  pseudo-likelihood resembles roughly $119{,}593$ observations rather
+  than $N = 6{,}809$, leading to extreme overconcentration of the
+  pseudo-posterior and credible intervals that are far too narrow.
+  The sum-to-$N$ normalization ensures that the pseudo-likelihood is
+  comparable in scale to an ordinary likelihood based on $N$ observations.
+\end{remark}
+
+\begin{remark}[Weighted score functions]\label{smc:rem-scores}
+  The observation-level score functions for the extensive and intensive
+  margins, along with their Fisher information and sign verification,
+  are developed in~\cref{smb:scores} (Supplementary Material~B).
+  The weighted versions used here simply multiply each per-observation
+  score by $\tilde{w}_i$; the separability of
+  \cref{prop:weighted-sep} guarantees that the weighted
+  extensive-margin scores depend only on $(\balpha, \bdelta_{1,\cdot})$
+  and the weighted intensive-margin scores depend only on
+  $(\bbeta, \bdelta_{2,\cdot}, \kappa)$.
+\end{remark}
+
+\begin{remark}[Significance of separability under weighting]
+\label{smc:rem-separability-significance}
+  The separability result in~\cref{prop:weighted-sep} is not
+  guaranteed for all survey adjustments.  Approaches that modify the
+  likelihood structure---such as multilevel weight smoothing
+  \citep{RabeHeskethSkrondal2006} or conditional likelihood
+  methods---can break the additive structure.  Observation-level
+  exponentiation $[f_i]^{\tilde{w}_i}$ preserves it precisely because
+  $\tilde{w}_i$ is a scalar multiplier in the log scale and does
+  not couple the two parameter blocks.  This separability is exploited
+  in the sandwich estimator (\cref{sec:survey}), where the
+  block-diagonality of $\mathbf{H}_{\mathrm{obs}}$ follows directly
+  from the additive decomposition.
+\end{remark}

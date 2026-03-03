@@ -1,0 +1,96 @@
+%% =============================================================================
+%% sm_f6_frequentist.tex — SM-E, Subsection E.6: Frequentist Contextualization
+%% Body content only (\subsection level); parent structure in sm_e.tex
+%% =============================================================================
+
+\subsection{Frequentist contextualization}
+\label{smf:frequentist}
+
+A natural question is whether a simpler design-based analysis could
+replace the full Bayesian hierarchical model.  We compare the HBB
+pseudo-posterior estimates with conventional survey-weighted frequentist
+estimates obtained from \texttt{survey::svyglm}
+\citep{Lumley2004,Lumley2020} to (i)~validate the design-consistency
+of the pseudo-posterior fixed effects and (ii)~clarify which model
+features cannot be accommodated by the frequentist approach.
+
+\paragraph{Frequentist specification.}
+We fit separate margin models using the same five-covariate
+specification as the HBB model.  For the extensive margin, we fit a
+survey-weighted logistic regression using
+\texttt{svyglm(\ldots, family = quasibinomial())} with $N = 6{,}785$
+observations.  For the intensive margin, we fit a survey-weighted
+linear regression of the IT enrollment share $y_i / n_i$ on the same
+covariates, restricted to the $N^{+} = 4{,}392$ participants.  Both
+models use the NSECE complex survey design (stratification, clustering,
+and sampling weights) and produce linearization-based cluster-robust
+standard errors.  No random effects, beta-binomial structure, or
+cross-margin dependence can be incorporated.
+
+\paragraph{Results.}
+\Cref{smf:tab-frequentist} compares the survey-weighted svyglm
+estimates with the M3b-W sandwich-corrected pseudo-posterior summaries.
+
+\begin{table}[htbp]
+\centering
+\caption{Frequentist contextualization: survey-weighted svyglm vs.\
+  Bayesian HBB (M3b-W, sandwich-corrected) point estimates and standard
+  errors.  The extensive margin uses logistic link in both approaches;
+  the intensive margin uses an identity link (svyglm) vs.\ logit link
+  (HBB), so the scales differ.  SE Ratio $=$ HBB sandwich SE / svyglm SE.}
+\label{smf:tab-frequentist}
+\input{Figures/ST_B6_frequentist}
+\end{table}
+
+For the extensive margin, both approaches use the logit link, enabling
+a meaningful comparison on a common scale.  The coefficient signs and
+relative magnitudes agree across all five predictors.  Point estimates
+from HBB are systematically larger in absolute value than the svyglm
+estimates, which is expected: the HBB model conditions on state-level
+random effects, and conditional effects in mixed models are known to
+exceed their marginal counterparts
+\citep{ZegerLiangAlbert1988}.  The SE ratio
+(HBB sandwich / svyglm) ranges from $0.59$ to $0.89$, reflecting the
+variance reduction achieved by modeling between-state heterogeneity
+through random effects rather than absorbing it into the residual.
+
+For the intensive margin, the comparison is less direct because the two
+approaches operate on different scales: svyglm regresses the
+enrollment share $y_i / n_i$ under an identity link, while HBB models
+the beta-binomial mean parameter $\mu_i$ under a logit link.  The
+differing intercepts (svyglm: $+0.483$; HBB: $-0.242$) reflect this
+scale difference rather than substantive disagreement, since
+$\operatorname{logit}^{-1}(-0.242) \approx 0.44$, which is in the
+range of the observed mean share.  The larger SE ratios for the
+intensive margin ($2.30$--$4.63$) also arise from the logit-scale
+parameterization, which inflates variances relative to the probability
+scale.
+
+\paragraph{Structural limitations.}
+The comparison highlights several features of the HBB framework
+that \texttt{svyglm} cannot accommodate:
+\begin{enumerate}[nosep]
+  \item \emph{Beta-binomial distribution:} svyglm models the continuous
+    share $y/n$ via Gaussian errors, ignoring the bounded-count nature of
+    the outcome and the extra-binomial overdispersion ($\kappa = 6.81$).
+  \item \emph{Hurdle structure:} the two margins must be fitted
+    separately, precluding joint inference on the zero-generating process.
+  \item \emph{State-level random effects:} svyglm is a fixed-effect
+    estimator; accommodating $S = 51$ state intercepts (and slopes in M3b)
+    would require either fixed-effect dummies---inflating SE and
+    sacrificing shrinkage---or a two-step approach that does not
+    propagate uncertainty.
+  \item \emph{Cross-margin correlation:} the bivariate random-effect
+    structure $\boldsymbol{\delta}_s \sim \Norm_{2q}(\mathbf{0},
+    \boldsymbol{\Sigma}_\delta)$ cannot be replicated in separate
+    margin-specific regressions.
+  \item \emph{Policy moderation:} the state-varying policy coefficients
+    $\boldsymbol{\Gamma}$ interact hierarchical and design-based
+    components in a way that has no natural frequentist counterpart.
+\end{enumerate}
+
+Taken together, the svyglm comparison serves as a fixed-effect-level
+sanity check: the Bayesian pseudo-posterior fixed effects are
+design-consistent with the frequentist target, while the full HBB
+framework adds hierarchical structure, distributional flexibility,
+and joint inference that the frequentist alternative cannot provide.

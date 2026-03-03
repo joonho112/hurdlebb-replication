@@ -1,0 +1,36 @@
+%% =============================================================================
+%% sm_d1_survey_design.tex — SM-D, Subsection D.1: Survey Design Characteristics
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%% =============================================================================
+
+\subsection{Survey design characteristics}
+\label{smd:survey-design}
+
+The NSECE~2019~\citep{NSECEProjectTeam2022} uses a stratified cluster design with $H = 30$ strata
+and $C = 415$ primary sampling units (PSUs), yielding $N = 6{,}785$
+center-based providers after excluding observations with missing
+covariates.  Survey weights $w_i = 1/\pi_i$ range from~$1$ to~$462$
+with a mean of~$17.5$ and a coefficient of variation of~$1.66$.
+\Cref{smd:fig-weights} displays the distribution of normalized
+weights $\tilde{w}_i = w_i / \bar{w}$, which are strongly right-skewed:
+the $99$th percentile ($\tilde{w} = 8.8$) is nearly nineteen times the
+median ($\tilde{w} = 0.47$), indicating that a small number of
+providers carry disproportionate influence.
+
+The Kish design effect is $\DEFF_{\mathrm{Kish}} = 1 + \mathrm{CV}_w^2
+= 3.76$, reducing the effective sample size from $N = 6{,}785$ to
+$\ESS_{\mathrm{Kish}} \approx 1{,}803$.  This substantial penalty
+motivates the sandwich variance correction and Cholesky calibration
+described in~\cref{sec:survey} and~\cref{app:survey}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{SF1_weight_distribution.pdf}
+  \caption{Distribution of normalized survey weights
+    $\tilde{w}_i = w_i / \bar{w}$ for $N = 6{,}785$ center-based
+    providers.  The red dashed line marks $\tilde{w} = 1.0$
+    (self-representing unit).  The distribution is strongly
+    right-skewed (CV~$= 1.66$), with Kish $\DEFF = 3.76$ and
+    effective sample size $\ESS \approx 1{,}803$.}
+  \label{smd:fig-weights}
+\end{figure}

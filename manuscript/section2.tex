@@ -1,0 +1,246 @@
+%% =============================================================================
+%% section2.tex — Section 2: Motivating Data and Preliminary Analysis
+%% =============================================================================
+
+\section{Motivating Data and Preliminary Analysis}
+\label{sec:data}
+
+This section introduces the data and documents the empirical features
+that jointly determine the model developed in \cref{sec:model}.  We
+organize the presentation around four distributional
+characteristics---structural zeros, bounded support, overdispersion, and
+complex survey design---each of which maps directly to a component of the
+hierarchical hurdle beta-binomial specification.  A preliminary analysis
+then establishes the reversal phenomenon and the cross-state
+heterogeneity that motivate the hierarchical structure and cross-margin
+covariance.
+
+%% ---------------------------------------------------------------------------
+%% 2.1 The NSECE Survey
+%% ---------------------------------------------------------------------------
+
+\subsection{The NSECE survey}\label{sec:nsece}
+
+The 2019 National Survey of Early Care and Education
+\citep[NSECE;][]{NSECEProjectTeam2022} is a nationally representative
+survey of early care and education providers conducted by NORC at the
+University of Chicago under contract with the Office of Planning,
+Research, and Evaluation (OPRE) within the Administration for Children
+and Families.  Data collection took place from November 2018 through
+July 2019, with $6{,}917$ center-based providers completing the survey.
+The center-based provider component employs a stratified
+multistage cluster design: 30 strata defined by state groupings, 415
+primary sampling units, and $6{,}809$ centers with nonmissing survey
+responses.
+Of these, 24 report a total enrollment of $n_i = 0$ and are excluded
+because the beta-binomial kernel requires a positive denominator,
+yielding a final analytic sample of $N = 6{,}785$ providers across all
+$S = 51$ states (50 states plus the District of Columbia).  Full details of the sampling frame, weight
+construction, and informativeness testing appear in Supplementary
+Material~D.
+
+For each provider $i$, the survey records total enrollment $n_i$ (ages
+0--5) and infant/toddler (IT) enrollment $Y_i \in \{0, 1, \ldots, n_i\}$
+(ages 0--2).  The outcome pair $(Y_i, n_i)$ is the natural unit of
+analysis.  Provider-level covariates include the community poverty rate,
+urbanicity, and racial/ethnic composition of the provider's Census
+tract~\citep{DobbinsEtAl2016, MalikEtAl2018}.  State-level policy
+variables capture three dimensions of Child Care and Development Fund
+(CCDF) subsidy policy---market rate percentile, tiered reimbursement, and
+infant/toddler rate add-on---and enter the model as cross-level
+moderators in \cref{sec:application}.  \Cref{tab:data-summary}
+summarizes the key descriptive statistics.
+
+\begin{table}[t]
+\centering
+\caption{Data summary: NSECE 2019 center-based providers.
+  Panel~A describes the outcome variables; Panel~B the provider-level
+  covariates (continuous variables shown before standardization, as
+  means with standard deviations and ranges); Panel~C the survey design
+  features, including the Kish design effect
+  $\DEFF_{\mathrm{Kish}} = 1 + \mathrm{CV}^2(w)$.}\label{tab:data-summary}
+\smallskip
+\begin{tabular}{@{}ll@{}}
+\toprule
+Variable & Value \\
+\midrule
+\multicolumn{2}{@{}l}{\textit{Panel A: Outcome}} \\[2pt]
+Total providers ($N$) & 6{,}785 \\
+IT-serving providers ($z_i = 1$) & 4{,}392 (64.7\%) \\
+Non-servers ($z_i = 0$) & 2{,}393 (35.3\%) \\
+Total enrollment ($n_i$): Mean / Median / Range & 60.5 / 48 / 1--378 \\
+IT enrollment ($Y_i \mid z_i = 1$): Mean / Median & 29.4 / 24 \\
+IT share ($Y_i/n_i \mid z_i = 1$): Mean (SD) & 0.478 (0.214) \\[4pt]
+\multicolumn{2}{@{}l}{\textit{Panel B: Covariates --- Mean (SD) [Range]}} \\[2pt]
+Community poverty rate (\%) & 17.3 (8.3) [1.9, 54.2] \\
+Urban (\%) & 93.3 \\
+Community \% Black & 17.2 (20.5) [0.0, 96.5] \\
+Community \% Hispanic & 24.2 (22.6) [0.0, 98.4] \\[4pt]
+\multicolumn{2}{@{}l}{\textit{Panel C: Survey design}} \\[2pt]
+States ($S$) & 51 (50 + DC) \\
+Strata / PSUs & 30 / 415 \\
+Sampling weight range & 1--462 \\
+Weight CV & 1.66 \\
+Kish effective sample size & 1{,}803 \\
+Kish $\DEFF$ & 3.76 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ---------------------------------------------------------------------------
+%% 2.2 Four Data Features
+%% ---------------------------------------------------------------------------
+
+\subsection{Four data features and their modeling implications}\label{sec:features}
+
+We now examine four distributional characteristics of the NSECE data
+that individually and jointly determine the model specification of
+\cref{sec:model}.  \Cref{fig:it-distribution} displays the marginal
+distribution of the infant/toddler enrollment share, which exhibits all
+four features simultaneously.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{F1_it_distribution.pdf}
+  \caption{Distribution of the infant/toddler enrollment share $Y_i/n_i$
+    across $N = 6{,}785$ center-based providers (NSECE 2019). The spike at
+    zero (35.3\% of centers) represents providers that do not serve any
+    children under age 3. Among IT-serving providers ($z_i = 1$, $N_{\mathrm{pos}} = 4{,}392$),
+    the distribution is roughly unimodal with a mean of 0.478 and substantial
+    dispersion (SD $= 0.214$), consistent with overdispersion approximately
+    twelve times beyond the binomial---three features that jointly motivate
+    the hurdle beta-binomial model.}\label{fig:it-distribution}
+\end{figure}
+
+\paragraph{Structural zeros and the hurdle specification.}
+Of the 6,785 providers, 2,393 (35.3\%) report zero infant/toddler
+enrollment---a rate far too large for sampling variability and reflecting
+a deliberate operational decision not to serve children under age
+three~\citep{AdamsRohacek2010}.  The hurdle
+specification~\citep{Mullahy1986} treats participation and intensity as
+distinct processes governed by separate parameters, as developed in
+\cref{sec:likelihood}.
+
+\paragraph{Bounded support and the beta-binomial kernel.}
+Among servers ($z_i = 1$), infant/toddler enrollment $Y_i$ is bounded
+above by total enrollment $n_i$, so the share $Y_i/n_i$ lies in
+$(0,1]$.  The beta-binomial distribution respects this
+$\{0,1,\ldots,n_i\}$ support and incorporates extra-binomial variation
+through the concentration parameter
+$\kappa$~\citep{Prentice1986, WagnerEtAl2015}; see
+\cref{sec:likelihood}.
+
+\paragraph{Overdispersion and the concentration parameter $\kappa$.}
+The observed variance of $Y_i/n_i$ among participants exceeds the
+binomial prediction by a factor of approximately 12 at the pooled level
+(marginal overdispersion, before accounting for covariates),
+and all 51 states individually exhibit overdispersion.  After conditioning
+on the model covariates and hierarchical structure, the estimated
+concentration $\hat{\kappa} \approx 7$ implies a conditional overdispersion
+factor of approximately 7.  The beta-binomial
+nests the binomial as $\kappa \to \infty$, modeling this overdispersion
+structurally rather than correcting for it post hoc~\citep{Prentice1986}.
+
+\paragraph{Complex survey design and the pseudo-posterior.}
+Sampling weights range from 1 to 462, yielding a Kish effective sample
+size of $\ESS_{\mathrm{Kish}} = 1{,}803$ and a design effect of
+$\DEFF_{\mathrm{Kish}} = 3.76$; a formal test confirms that the design
+is informative for the intensive margin~\citep{Pfeffermann1993}.
+Ignoring the design would yield credible intervals with empirical
+coverage well below nominal; \cref{sec:survey} develops the
+pseudo-posterior and sandwich correction.
+
+Each feature alone eliminates a class of candidate models: structural
+zeros eliminate single-equation specifications, bounded support
+eliminates Poisson and negative-binomial kernels, universal
+overdispersion eliminates the binomial, and the complex survey design
+eliminates naive Bayesian posteriors.  The \emph{intersection} of all
+four constraints narrows the viable specification to a hurdle model with
+a beta-binomial kernel, estimated via a pseudo-posterior with sandwich
+correction.
+
+%% ---------------------------------------------------------------------------
+%% 2.3 Preliminary Evidence for the Poverty Reversal
+%% ---------------------------------------------------------------------------
+
+\subsection{Preliminary evidence for the poverty reversal}\label{sec:prelim}
+
+The four data features determine the model's distributional
+specification.  The model's \emph{hierarchical} structure---state-varying
+coefficients with cross-margin covariance---is motivated by a fifth
+empirical pattern: the reversal varies systematically across
+states.
+
+\paragraph{Pooled estimates.}
+A pooled logistic regression of infant/toddler participation ($z_i$) on
+the standardized community poverty rate yields an extensive-margin
+coefficient of $\hat{\alpha}_{\mathrm{pov}} = -0.020$
+($p < 10^{-10}$), confirming that providers in higher-poverty
+communities are significantly less likely to serve infants.  A pooled OLS
+regression of the enrollment share ($Y_i/n_i$ among servers) on poverty
+yields an intensive-margin coefficient of
+$\hat{\beta}_{\mathrm{pov}} = +0.003$ ($p < 10^{-14}$), establishing
+that, conditional on serving, providers in poorer communities devote a
+larger share of enrollment to infants.  The opposing signs constitute the
+reversal in its simplest form: poverty \emph{reduces}
+participation but \emph{increases} intensity.
+
+The substantive interpretation is noteworthy.  Poverty erects a barrier to
+entry: the elevated costs of infant care discourage participation
+precisely where demand is greatest~\citep{DobbinsEtAl2016,
+MalikEtAl2018}.  Yet among centers that clear this barrier, those in
+disadvantaged communities tilt their enrollment mix toward the youngest
+age group, reflecting either market demand in areas with fewer
+alternatives or mission-driven service provision.  Any model that
+collapses participation and intensity into a single equation would
+estimate a muted net effect, obscuring the two countervailing forces at
+work.
+
+\paragraph{State heterogeneity.}
+When these regressions are estimated separately by state, 23 of 51
+states (45\%) display the classic reversal pattern
+($\hat{\alpha}_{\mathrm{pov},s} < 0$ and
+$\hat{\beta}_{\mathrm{pov},s} > 0$).  The remaining states show varying
+combinations: some exhibit negative effects on both margins, while
+others show positive effects on both.  The cross-state correlation
+between the two margin-specific poverty coefficients is $r = 0.021$---near
+zero---indicating that the extensive and intensive mechanisms operate
+largely independently.  \Cref{fig:poverty-raw} displays the aggregate reversal
+in the raw data; the state-level bivariate scatter appears
+in~\cref{fig:cross-margin}.  The near-zero cross-margin correlation implies
+that knowing a state has a strong participation barrier provides
+essentially no information about its intensity response, a finding that
+motivates the full covariance structure developed in
+\cref{sec:model}~\citep{SippleEtAl2020}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{F2_poverty_reversal_raw.pdf}
+  \caption{Preliminary evidence for the poverty reversal in the raw NSECE
+    2019 data.  \emph{Left panel:} IT participation rate (fraction of
+    centers serving any infants) by community poverty decile; a loess
+    smoother with 95\% confidence band confirms the declining trend.
+    \emph{Right panel:} mean IT enrollment share ($Y_i/n_i$) among servers
+    by poverty decile, showing the opposing positive trend.  The two panels
+    together display the reversal in its simplest form: participation falls
+    with poverty, but intensity rises.}\label{fig:poverty-raw}
+\end{figure}
+
+\paragraph{Policy correlations.}
+Among the state-level policy variables, tiered reimbursement shows the
+strongest association with the poverty--participation relationship:
+states with tiered reimbursement tend to have less negative
+extensive-margin poverty coefficients, consistent with the hypothesis
+that quality-linked payment incentives offset the cost disadvantage of
+serving infants in disadvantaged communities.  These preliminary
+correlations motivate the cross-level moderation analysis in
+\cref{sec:application}.
+
+In sum, the data require a model that simultaneously (i)~separates
+structural zeros from positive counts via a hurdle, (ii)~respects the
+bounded support via a beta-binomial kernel, (iii)~accommodates
+overdispersion through the concentration parameter, (iv)~incorporates
+survey weights through a pseudo-posterior with sandwich correction, and
+(v)~captures cross-state heterogeneity and cross-margin dependence
+through a hierarchical prior with full covariance.  \Cref{sec:model}
+develops this model.

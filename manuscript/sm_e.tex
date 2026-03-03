@@ -1,0 +1,43 @@
+%% =============================================================================
+%% sm_e.tex — SM-E: Simulation and Computational Details (container file)
+%% =============================================================================
+
+This appendix provides computational and simulation details supplementing
+\cref{sec:model,sec:simulation}.  \Cref{sme:model-hierarchy} presents the
+five-model hierarchy with parameter counts.  \Cref{sme:mcmc} describes
+the MCMC configuration and runtime benchmarks.  \Cref{smf:dgp} specifies
+the data-generating process for the simulation study,
+\cref{smf:diagnostics} presents supplementary simulation diagnostic
+figures, \cref{smf:misspec} evaluates robustness under model
+misspecification, \cref{smf:frequentist} provides a frequentist
+contextualization, \cref{smf:decomposition} decomposes the coverage
+gap into bias and width components, and \cref{smf:coverage95} reports
+coverage at the 95\% nominal level.  Implementation details (non-centered parameterization,
+numerical stability, score computation) are documented in the
+\textsf{hurdlebb} package vignettes; full simulation results and
+replication instructions are available in the replication package at
+\url{https://github.com/joonho112/hurdlebb-replication}.
+
+%% --- E.1: Model Hierarchy and Fitting Strategy (from old E.1) ---
+\input{sm_e1_model_hierarchy}
+
+%% --- E.2: MCMC Configuration (from old E.4) ---
+\input{sm_e4_mcmc}
+
+%% --- E.3: Simulation Data-Generating Process (from old F.1) ---
+\input{sm_f1_dgp}
+
+%% --- E.4: Supplementary Simulation Diagnostics (from old F.3) ---
+\input{sm_f3_diagnostics}
+
+%% --- E.5: Model Misspecification Robustness ---
+\input{sm_f5_misspec}
+
+%% --- E.6: Frequentist Contextualization ---
+\input{sm_f6_frequentist}
+
+%% --- E.7: Coverage Gap Decomposition ---
+\input{sm_f7_decomposition}
+
+%% --- E.8: 95% Coverage Results ---
+\input{sm_f8_coverage95}

@@ -1,0 +1,63 @@
+%% =============================================================================
+%% sm_d5_states.tex — SM-D, Subsection D.3: State-Level Poverty Coefficients
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%%
+%% =============================================================================
+
+\subsection{State-level poverty coefficients}
+\label{smd:states}
+
+This subsection summarizes the state-level poverty coefficients from
+model~M2 (block-diagonal SVC without policy moderators) for all
+$S = 51$ states.  The extensive-margin coefficient
+$\alpha_{\mathrm{pov},s}$ and intensive-margin coefficient
+$\beta_{\mathrm{pov},s}$ are the state-specific effects of a
+one-standard-deviation increase in community poverty on the log-odds of
+IT participation and the logit of IT intensity, respectively.  The
+cross-margin scatter plot in \cref{fig:cross-margin} visualizes the
+joint distribution of these estimates.
+
+Of the 51 states, 48 (94\%) have posterior-mean sign patterns consistent
+with the classic reversal
+($\hat{\alpha}_{\mathrm{pov},s} < 0$ and
+$\hat{\beta}_{\mathrm{pov},s} > 0$); this near-universal pattern
+reflects hierarchical shrinkage pulling small-state estimates toward
+the negative population-average extensive-margin coefficient.
+Among these, 15 (29\%) exhibit posterior reversal probabilities
+exceeding 0.80, indicating strong evidence beyond the point-estimate
+sign, and an additional 21 states have reversal probabilities between
+0.60 and 0.80.
+
+\paragraph{States with strongest reversal evidence.}
+The five large-sample states with the highest reversal probabilities are
+Texas ($N = 578$, $\Pr = 0.989$),
+Illinois ($N = 471$, $\Pr = 0.970$),
+California ($N = 1{,}110$, $\Pr = 0.937$),
+Louisiana ($N = 77$, $\Pr = 0.923$), and
+New Jersey ($N = 201$, $\Pr = 0.908$).
+In these states, the extensive-margin coefficients
+($\alpha_{\mathrm{pov},s} \in [-0.34, -0.13]$) are firmly negative
+with 90\% credible intervals excluding zero, while the
+intensive-margin coefficients
+($\beta_{\mathrm{pov},s} \in [0.07, 0.08]$) are positive with
+intervals barely including zero.
+
+\paragraph{Notable exception: New York.}
+New York ($N = 558$) stands out as the most prominent exception, with a
+\emph{positive} extensive-margin coefficient
+($\alpha_{\mathrm{pov}} = 0.101$; 90\% CI $[-0.051, 0.261]$,
+$\Pr(\text{reversal}) = 0.143$), suggesting that higher poverty is
+associated with \emph{greater} likelihood of serving infants and
+toddlers---possibly reflecting New York's substantial public investment
+in early childhood programs.  Arizona ($\Pr = 0.40$), Minnesota
+($\Pr = 0.44$), and North Dakota ($\Pr = 0.48$) also show weak or
+absent reversal patterns.
+
+\paragraph{Small-state shrinkage.}
+Small states (e.g., Maine, $N = 18$; Mississippi, $N = 17$; Montana,
+$N = 22$) exhibit wider credible intervals and reversal probabilities
+closer to the national average ($\approx 0.73$), reflecting the
+expected shrinkage toward the hierarchical mean documented
+in~\cref{app:survey}.  The full 51-state coefficient table is available
+in the replication package at
+\url{https://github.com/joonho112/hurdlebb-replication}.

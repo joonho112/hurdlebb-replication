@@ -1,0 +1,70 @@
+%% =============================================================================
+%% sm_e1_model_hierarchy.tex — SM-E, Subsection E.1: Model Hierarchy
+%% Body content only (\subsection level); parent structure in sm_e.tex
+%% =============================================================================
+
+\subsection{Model hierarchy and architecture}
+\label{sme:model-hierarchy}
+
+\Cref{sme:tab-hierarchy} summarizes the five nested models fitted in
+the application (\cref{sec:application}).  Each model extends its
+predecessor by one structural feature: random intercepts (M1),
+state-varying coefficients with block-diagonal covariance (M2),
+cross-margin covariance (M3a), and policy moderators (M3b).  The
+final model M3b-W adds survey weights to the pseudo-posterior.
+Parameter counts include all fixed effects, random effects, and
+hyperparameters (Cholesky factors, scales, and correlations).
+
+The models are fitted sequentially using warm-start initialization:
+the posterior mean of model~$k$ provides the initial values for
+model~$k+1$.  Random-effect parameters absent in the simpler model
+are initialized at zero (NCP variates) or identity (Cholesky factors).
+This progressive strategy reduces total computation time by
+approximately~$40\%$ compared with cold starts and ensures that each
+model addresses a question raised by its predecessor:
+M0 to M1 asks whether baseline enrolment rates vary by state;
+M1 to M2, whether the poverty reversal varies by state;
+M2 to M3a, whether cross-margin covariance improves fit;
+and M3a to M3b, whether observable policies explain the state
+heterogeneity.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \begin{tabular}{@{}l l r l r@{}}
+    \toprule
+    Model & Structure & Parameters
+      & Covariance & $\widehat{\elpd}_{\mathrm{loo}}$ \\
+    \midrule
+    M0  & Pooled HBB
+        & 11
+        & ---
+        & $-20{,}945$ \\
+    M1  & Random intercepts
+        & 116
+        & $2 \times 2$
+        & $-20{,}627$ \\
+    M2  & Block-diagonal SVC
+        & 551
+        & $(5 \times 5) \oplus (5 \times 5)$
+        & $-20{,}604$ \\
+    M3a & Full SVC
+        & 576
+        & $10 \times 10$
+        & $-20{,}602$ \\
+    M3b & Policy moderators
+        & 616
+        & $10 \times 10$
+        & $-20{,}608$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Model hierarchy.  Parameters: total number of free
+    parameters (fixed effects + random effects + hyperparameters).
+    Covariance: dimension of the state-level covariance matrix for
+    the random-effect deviations~$\bdelta_s$.  LOO: expected
+    log-predictive density (\cref{sec:application}).  The
+    progression from M0 to M3a yields significant incremental
+    improvements in predictive accuracy; M3b adds policy
+    moderators without further predictive gain.}
+  \label{sme:tab-hierarchy}
+\end{table}

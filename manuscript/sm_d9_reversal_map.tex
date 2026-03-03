@@ -1,0 +1,30 @@
+%% =============================================================================
+%% sm_d9_reversal_map.tex — SM-D, Subsection D.6: Reversal Probability Map
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%%
+%% =============================================================================
+
+\subsection{Reversal probability map}
+\label{smd:reversal-map}
+
+\Cref{smd:fig-reversal-map} maps the posterior probability of the poverty
+reversal for each state:
+$\Pr(\tilde{\alpha}_{\mathrm{pov},s} < 0 \text{ and }
+\tilde{\beta}_{\mathrm{pov},s} > 0 \mid \text{data})$, computed from the
+unweighted M2 model (block-diagonal SVC).  States with high reversal
+probability ($\Pr > 0.9$) are concentrated in the South, Southwest, and
+large urban states; states with low probability ($\Pr < 0.1$) are
+primarily in the upper Midwest and Mountain West.  The remaining states
+($0.1 \le \Pr \le 0.9$) tend to be smaller states where the posterior
+intervals are wide due to limited sample sizes.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{F4_reversal_probability_map.pdf}
+  \caption{Choropleth map of the posterior reversal probability from the
+    unweighted M2 model (block-diagonal SVC):
+    $\Pr(\tilde{\alpha}_{\mathrm{pov},s} < 0 \;\cap\;
+    \tilde{\beta}_{\mathrm{pov},s} > 0 \mid \text{data})$.  Darker shading
+    indicates higher reversal probability.  The population-average
+    probability of reversal is 1.000.}\label{smd:fig-reversal-map}
+\end{figure}

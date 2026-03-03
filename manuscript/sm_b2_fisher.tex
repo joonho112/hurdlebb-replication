@@ -1,0 +1,133 @@
+%% =============================================================================
+%% sm_b2_fisher.tex — SM-B, Subsection B.2: Fisher Information and Block-Diagonality
+%% Body content only (\subsection level); parent structure in sm_b.tex
+%% Primary source: dev/log/03_research-notes-deep-mathematical-properties.qmd
+%%   lines 611--689 (Fisher information structure, block-diagonality)
+%% Corrections applied: T1-5 (Fisher rate), T1-6 (H/J normalization),
+%%   T1-7 (E[J]=H caveat), Issue 23 (2-block, not 3-block)
+%% =============================================================================
+
+\subsection{Fisher information and block-diagonality}\label{smb:fisher-info}
+
+The individual score functions and information entries derived in
+\cref{smb:scores} concern a single linear predictor or scalar parameter.
+This subsection establishes the \emph{global} structure of the Fisher
+information matrix---in particular, the block-diagonal separation between
+the extensive- and intensive-margin parameter blocks---and collects
+several ancillary results on information rates and the sandwich convention.
+
+%% ---------------------------------------------------------------------------
+%%  B.2.1  Block-diagonal Fisher information
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Block-diagonal Fisher information]
+\label{smb:prop-block-diag}
+  Let\/ $\btheta = (\boldsymbol{\phi}_1^\t,\, \boldsymbol{\phi}_2^\t)^\t$, where
+  $\boldsymbol{\phi}_1 = (\balpha^\t, \bdelta_{1,s}^\t)^\t$ collects the
+  extensive-margin parameters and
+  $\boldsymbol{\phi}_2 = (\bbeta^\t, \bdelta_{2,s}^\t, \log\kappa)^\t$ collects the
+  intensive-margin parameters including the dispersion.  Then the expected
+  Fisher information for a single observation decomposes as
+  \begin{equation}\label{smb:eq-block-diag}
+    \boxed{%
+      \cl{I}_i(\btheta)
+      = \diag\!\bigl(\cl{I}_{\textup{ext},i},\;
+        \cl{I}_{\textup{int}+\kappa,i}\bigr).
+    }
+  \end{equation}
+  That is, the cross-information between $\boldsymbol{\phi}_1$ and $\boldsymbol{\phi}_2$ vanishes
+  identically.
+\end{proposition}
+
+\begin{proof}
+  The log-likelihood decomposes as
+  $\ell_i = \ell_i^{(1)} + \ell_i^{(2)}$, where
+  \[
+    \ell_i^{(1)}
+    = z_i\log q_i + (1-z_i)\log(1-q_i)
+  \]
+  depends only on $\boldsymbol{\phi}_1$ through
+  $q_i = \expit(\bx_i^\t\balpha + \bx_i^{(r)\t}\bdelta_{1,s})$, and
+  \[
+    \ell_i^{(2)}
+    = z_i\bigl[\log f_{\textup{BB}}(y_i \mid n_i, \mu_i, \kappa)
+      - \log(1-p_{0,i})\bigr]
+  \]
+  depends only on $\boldsymbol{\phi}_2$ through $\mu_i$ and $\kappa$.
+
+  \medskip\noindent\textit{Cross-derivative
+  $\partial\ell^{(1)}/\partial\boldsymbol{\phi}_2$.}\enspace
+  Since $\ell_i^{(1)}$ does not involve any element of $\boldsymbol{\phi}_2$,
+  this derivative is identically zero.
+
+  \medskip\noindent\textit{Cross-derivative
+  $\partial\ell^{(2)}/\partial\boldsymbol{\phi}_1$.}\enspace
+  Write $\ell_i^{(2)} = z_i \cdot g(\mu_i,\kappa,y_i,n_i)$.
+  The indicator $z_i = \one(y_i > 0)$ is a function of the observed
+  data, not of parameters, so
+  $\partial z_i/\partial\boldsymbol{\phi}_1 = \mathbf{0}$ and hence
+  $\partial\ell_i^{(2)}/\partial\boldsymbol{\phi}_1 = \mathbf{0}$.
+
+  \medskip
+  Combining,
+  $\partial^2\ell_i/\partial\boldsymbol{\phi}_1\,\partial\boldsymbol{\phi}_2^\t = \mathbf{0}$,
+  which gives~\eqref{smb:eq-block-diag} after taking expectations.
+\end{proof}
+
+\begin{remark}[Hurdle versus zero-inflated models]
+\label{smb:rem-hurdle-vs-zi}
+  The block-diagonality in~\cref{smb:prop-block-diag} is a general
+  structural property of hurdle (two-part) models
+  \citep{Mullahy1986,Cragg1971}: the
+  participation indicator $z_i = \one(y_i > 0)$ is observed, so
+  each component of the likelihood depends on a disjoint parameter
+  subset.  In zero-inflated models~\citep[e.g.,][]{Lambert1992}, by
+  contrast, the at-risk indicator is
+  \emph{latent}, and both the inflation and count parameters enter the
+  marginal likelihood of every observation, coupling the two components
+  in the Fisher information
+  \citep[see][for a comprehensive comparison]{NeelonEtAl2016}.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%%  B.2.2  Extensive-margin information in parameter space
+%% ---------------------------------------------------------------------------
+
+\begin{proposition}[Extensive-margin information in parameter space]
+\label{smb:prop-ext-paramspace}
+  The extensive-margin Fisher information block for provider~$i$ is
+  \begin{equation}\label{smb:eq-ext-paramspace}
+    \cl{I}_{\textup{ext},i}
+    = q_i(1-q_i)\,\mathbf{d}_{1,i}\,\mathbf{d}_{1,i}^\t,
+  \end{equation}
+  where
+  $\mathbf{d}_{1,i}
+  = \partial\eta_i^{(1)}/\partial(\balpha^\t,\bdelta_{1,s}^\t)^\t$
+  is the gradient of the extensive-margin linear predictor with respect to
+  all extensive-margin parameters.
+\end{proposition}
+
+\begin{proof}
+  By~\cref{smb:rem-ext-info}, the scalar information for the linear
+  predictor is $\cl{I}_{\textup{ext},i} = q_i(1-q_i)$.  The chain rule
+  $\partial\ell_i^{(1)}/\partial\boldsymbol{\phi}_1
+  = (\partial\ell_i^{(1)}/\partial\eta_i^{(1)})\,\mathbf{d}_{1,i}$
+  yields the rank-one outer product
+  form~\eqref{smb:eq-ext-paramspace}.
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%%  B.2.3  Fisher information rates
+%% ---------------------------------------------------------------------------
+
+\begin{remark}[Fisher information rates]\label{smb:rem-info-rates}
+  The extensive-margin information $q_i(1-q_i)$ is $O(1)$ and
+  non-random (\cref{smb:rem-ext-info}).  The intensive-margin
+  information involves trigamma sums $\psi_1(a) + \psi_1(b)$ that
+  diverge as $\kappa \to 0$; for the empirically relevant range
+  $\kappa \in [2.5,\, 26.5]$ the information is well-behaved, but
+  the divergent terms underlie the larger design effect ratios
+  observed for intensive-margin parameters in
+  \cref{sec:simulation,app:survey}.
+\end{remark}
+

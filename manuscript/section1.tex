@@ -1,0 +1,139 @@
+%% =============================================================================
+%% section1.tex — Section 1: Introduction
+%% =============================================================================
+
+\section{Introduction}
+\label{sec:intro}
+
+% ---- Paragraph 1: Data phenomenon and canonical example ----
+
+Bounded discrete proportions---counts out of known totals---arise
+whenever a finite capacity is partially utilized: hospital beds
+occupied, insurance plans enrolled, dental surfaces decayed, survey
+items endorsed, or enrollment slots filled at a childcare center.  When the outcome can take the value zero for
+structural rather than sampling reasons and displays variance well
+beyond the binomial, standard generalized linear models are inadequate.
+Infant and toddler childcare enrollment in the United States offers a
+canonical instance of all these complications simultaneously.  Data from
+the 2019 National Survey of Early Care and Education
+\citep{NSECEProjectTeam2022} record, for each center-based provider,
+the number of children under age three enrolled out of total capacity.
+Over one-third of centers report zero infant and toddler enrollment---not
+because demand is absent, but because stringent staff-to-child ratios and
+elevated per-child costs lead many providers to decline serving this age
+group entirely~\citep{AdamsRohacek2010}.  The resulting access gaps fall
+disproportionately on high-poverty
+communities~\citep{DobbinsEtAl2016, MalikEtAl2018}, yet the relationship
+between poverty and enrollment turns out to be considerably more complex
+than a simple deficit story.
+
+% ---- Paragraph 2: The poverty reversal → methodological challenge ----
+
+A preliminary examination of the data reveals a distinctive pattern that we
+term the \emph{poverty reversal}: community poverty reduces the
+probability that a center serves infants and toddlers at all, yet among
+centers that \emph{do} participate, those in higher-poverty areas devote
+a \emph{larger} share of capacity to this age group.
+The reversal poses a methodological challenge: it \emph{cannot be detected} by any model
+that conflates participation and intensity into a single equation, nor
+by one that fails to accommodate bounded support, overdispersion,
+structural zeros, and survey weighting simultaneously.  These four
+features jointly motivate the hierarchical hurdle beta-binomial
+framework developed in this paper.
+
+% ---- Paragraph 3: Literature review — hurdle/ZI and beta-binomial ----
+
+Two-part models for count data with excess zeros have a substantial
+history.  \citet{Cragg1971} introduced the hurdle framework for
+continuous expenditures and \citet{Mullahy1986} adapted it for counts,
+separating a binary participation stage from a truncated count stage.
+Bayesian extensions have expanded their scope considerably: hierarchical
+zero-inflated or hurdle models with Poisson and negative-binomial kernels
+now accommodate spatial, longitudinal, and multilevel structures
+\citep{NeelonEtAl2010, NeelonEtAl2013, NeelonEtAl2016, Neelon2019,
+Altinisik2023}.  Most relevant to our work, \citet{GhosalEtAl2020}
+propose a hierarchical hurdle model for spatiotemporal count data that
+captures cross-margin dependence through a single shared scalar.  However,
+all of these models assume Poisson or negative-binomial kernels, which
+treat the count as unbounded.  When the response has bounded support, the
+beta-binomial distribution is the natural alternative, introducing
+overdispersion while respecting the $\{0,1,\ldots,n\}$
+support~\citep{WagnerEtAl2015}.  \citet{BandyopadhyayEtAl2011} embed the
+beta-binomial in a spatial framework for clustered bounded counts, and
+\citet{WenEtAl2025} propose a zero-inflated beta-binomial with spatially
+varying coefficients and cross-component covariance.  Yet they adopt a
+zero-inflation formulation in which zeros arise from a latent mixture,
+whereas in the childcare setting a center reporting zero infant enrollment
+has made a deliberate operational decision~\citep[cf.][]{Lambert1992,
+Hall2000}, making the hurdle specification the natural choice.
+
+% ---- Paragraph 4: Literature — survey weighting and the gap ----
+
+A separate methodological strand addresses design-based inference in
+Bayesian models for survey data.  \citet{SavitskyToth2016} develop a
+pseudo-posterior framework in which survey weights enter the likelihood
+exponent, and \citet{WilliamsSavitsky2021} provide calibrated sandwich
+variance corrections that restore nominal credible-interval
+coverage~\citep[building on][]{Binder1983, Pfeffermann1993}.  These
+contributions target standard single-equation regressions; their
+extension to two-part hierarchical specifications has not been attempted.
+In sum, the literature provides the individual building
+blocks---hurdle, beta-binomial, hierarchical structure, survey
+correction---but not their synthesis.
+
+% ---- Paragraphs 5--6: Two contributions + analytical framework ----
+
+This paper develops that synthesis.  The model extends the framework of
+\citet{GhosalEtAl2020} in two directions, each addressing a limitation
+of existing approaches.
+
+First, we introduce a Bayesian hierarchical hurdle beta-binomial
+model with state-varying coefficients and cross-margin covariance.  The
+hurdle component separates participation from intensity; the
+beta-binomial kernel respects the bounded support and accommodates the
+observed overdispersion, which exceeds the binomial variance by a factor
+of approximately twelve; and the hierarchical prior on state-level
+coefficients identifies a cross-margin covariance structure whose
+effective sample size is $S = 51$ states rather than $N = 6{,}785$
+providers, with the $\LKJ$ prior providing finite-sample regularization
+for the high-dimensional covariance ($2q = 10$ parameters).  The model nests
+the scalar cross-margin parameter of \citet{GhosalEtAl2020} as a special
+case and extends the beta-binomial models of
+\citet{BandyopadhyayEtAl2011} and \citet{WenEtAl2025} by incorporating a
+hurdle for structural zeros.  Applied to the NSECE data, this
+specification reveals the reversal---and its geographic
+heterogeneity across 51 states---with full uncertainty quantification.
+
+Second, we extend the pseudo-posterior framework of
+\citet{SavitskyToth2016} and \citet{WilliamsSavitsky2021} to the
+two-part hierarchical setting, implementing a Cholesky-based sandwich
+variance correction~\citep{Binder1983, Pfeffermann1993} and introducing
+the design effect ratio as a parameter-specific diagnostic.  A companion
+simulation study (\cref{sec:simulation}) provides candid diagnostics:
+sandwich-corrected intervals substantially improve coverage for fixed
+effects under realistic design effects (82--88.5\% at the 90\% nominal
+level), while variance components require
+unweighted estimation---a finding we report transparently rather than
+treating the sandwich as a universal remedy.
+
+These two innovations jointly enable a marginal effect
+decomposition~(\cref{prop:lae-lie}) that separates the reversal into
+extensive-margin (access) and intensive-margin (intensity) components.
+A single-equation specification conflates these offsetting forces into
+a muted net effect; the two-part decomposition quantifies each channel
+and their relative magnitudes, with the extensive margin accounting for
+approximately two-thirds of the total effect.  The companion R package
+\textsf{hurdlebb}~\citep{hurdlebb2026} implements the full methodology.
+
+% ---- Paragraph 7: Paper outline ----
+
+The remainder of the paper is organized as follows.
+\Cref{sec:data} introduces the NSECE data and documents the empirical
+patterns motivating the model.
+\Cref{sec:model} develops the hierarchical hurdle beta-binomial
+specification, its analytic properties, and the sandwich correction.
+\Cref{sec:simulation} reports the simulation study.
+\Cref{sec:application} applies the model to the 2019 NSECE data.
+\Cref{sec:discussion} discusses implications and limitations.
+Supplementary Materials~A--E provide proofs, identification conditions,
+extended tables, and computational details.

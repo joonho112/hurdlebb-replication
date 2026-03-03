@@ -1,0 +1,51 @@
+%% =============================================================================
+%% sm_f7_decomposition.tex — SM-E, Subsection E.7: Coverage Gap Decomposition
+%% Body content only (\subsection level); parent structure in sm_e.tex
+%% =============================================================================
+
+\subsection{Coverage gap decomposition}
+\label{smf:decomposition}
+
+\Cref{smf:tab-decomposition} decomposes the coverage gap for each
+parameter--estimator combination under the S3 (NSECE-calibrated) scenario.
+Two diagnostic quantities distinguish width-driven from bias-driven
+shortfalls:
+\begin{itemize}[nosep]
+  \item \emph{SE calibration ratio} $= \widehat{\mathrm{SD}} /
+    \overline{\mathrm{SE}}$, where $\widehat{\mathrm{SD}}$ is the
+    empirical standard deviation of point estimates across $R = 200$
+    replications and $\overline{\mathrm{SE}}$ is the mean reported
+    standard error.  A ratio exceeding 1 indicates that the reported SE
+    underestimates the actual sampling variability (width-driven gap).
+  \item \emph{Standardized mean bias} $= |\bar{b}| /
+    \widehat{\mathrm{SD}}$, where $\bar{b}$ is the mean bias across
+    replications.  Values exceeding $\sim 0.5$ indicate non-negligible
+    centering error (bias-driven gap).
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Coverage gap decomposition under the S3 (NSECE-calibrated)
+  scenario.  ``Below'' and ``Above'' report the percentage of replications
+  where the true value falls below or above the confidence interval,
+  respectively.  SE ratio $> 1$ indicates intervals that are too narrow;
+  $|\bar{b}|/\mathrm{SD} > 0.5$ indicates non-negligible point estimate
+  bias.  $\star$ = sandwich structurally inapplicable (E-WS $\equiv$ E-WT).}
+\label{smf:tab-decomposition}
+\input{Figures/ST_B8_decomposition}
+\end{table}
+
+For the poverty coefficients under E-WS, the SE ratio of 1.13--1.14
+and negligible standardized bias (0.06--0.22) confirm that the 8~pp
+coverage gap is entirely width-driven: the sandwich variance estimator
+underestimates the true sampling variance by approximately 13\%.
+This is consistent with the well-documented $O(S^{-1})$ finite-sample
+downward bias of cluster-robust variance estimators when $S = 51$
+\citep{Binder1983}.  For $\log\kappa$, the picture reverses: the SE
+ratio is 1.00 (perfectly calibrated width), but the standardized bias
+of 1.37 indicates that the pseudo-likelihood point estimate is
+systematically shifted, producing entirely one-sided non-coverage
+(39.5\% below, 0\% above).  For $\tau_{\mathrm{ext}}$ and
+$\tau_{\mathrm{int}}$, massive standardized bias ($> 3$) overwhelms
+any width consideration, reaffirming the structural inapplicability of
+the sandwich correction to variance components.

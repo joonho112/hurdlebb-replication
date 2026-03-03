@@ -1,0 +1,180 @@
+% main.sty — Custom style package for IT Enrollment manuscript
+% Adapted from DPprior arXiv preprint (Lee et al., 2025)
+% JRSS-A: "The Poverty Reversal in Infant/Toddler Childcare"
+
+%%% --- Encoding and fonts ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{mathrsfs}
+\usepackage{bm}
+\usepackage{textcomp}
+\usepackage{upquote}
+
+%%% --- Graphics and layout ---
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{mdframed}
+\usepackage{xcolor}
+\RequirePackage{thm-restate}
+
+%%% --- Lists, algorithms, geometry ---
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[margin=1in]{geometry}
+\usepackage{subcaption}
+
+%%% --- Hyperlinks and cross-references ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue
+}
+\RequirePackage[capitalise, nameinlink, noabbrev]{cleveref}
+
+%%% --- Theorem environments ---
+\newtheorem{lemma}{Lemma}
+
+\newtheoremstyle{theorem}
+    {3pt}{3pt}{\slshape}{}{\bfseries}{.}{.5em}{}
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{as}{Assumption}
+
+%%% --- General math commands ---
+\newcommand{\bDelta}{\mathbf{\Delta}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\e}{\epsilon}
+\newcommand{\bb}[1]{\mathbb{#1}}
+\newcommand{\bR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\cl}[1]{\mathcal{#1}}
+\renewcommand{\sf}[1]{\textsf{#1}}
+\newcommand{\set}[1]{\left\lbrace #1 \right\rbrace}
+
+%%% --- Math operators ---
+\DeclareMathOperator*{\Cov}{Cov}
+\DeclareMathOperator*{\Corr}{Corr}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\Var}{Var}
+\newcommand{\var}{\operatorname{Var}}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\vech}{vech}
+\DeclareMathOperator{\elpd}{elpd}
+
+%%% --- Independence symbol ---
+\DeclareSymbolFont{symbolsC}{U}{txsyc}{m}{n}
+\DeclareMathSymbol{\indep}{\mathrel}{symbolsC}{121}
+
+%%% --- Distribution shorthands ---
+\newcommand{\Norm}{\textsf{N}}
+\newcommand{\Bern}{\operatorname{Bern}}
+\newcommand{\Unif}{\operatorname{Unif}}
+\newcommand{\Bin}{\operatorname{Bin}}
+\newcommand{\Pois}{\operatorname{Pois}}
+\newcommand{\Gammadist}{\operatorname{Gamma}}
+\newcommand{\NBin}{\operatorname{NBin}}
+\newcommand{\Beta}{\operatorname{Beta}}
+\newcommand{\Geom}{\operatorname{Geom}}
+\newcommand{\Dir}{\operatorname{Dir}}
+\newcommand{\Mult}{\operatorname{Mult}}
+
+%%% --- IT-enrollment-specific distribution operators ---
+\newcommand{\BetaBin}{\operatorname{BetaBin}}
+\newcommand{\ZTBB}{\operatorname{ZT\text{-}BetaBin}}
+\newcommand{\HBB}{\operatorname{HBB}}
+\newcommand{\LKJ}{\operatorname{LKJ}}
+\newcommand{\HalfCauchy}{\operatorname{Half\text{-}Cauchy}}
+\newcommand{\HalfNormal}{\operatorname{Half\text{-}Normal}}
+
+%%% --- IT-enrollment-specific abbreviation operators ---
+\newcommand{\DER}{\operatorname{DER}}
+\newcommand{\LAE}{\operatorname{LAE}}
+\newcommand{\LIE}{\operatorname{LIE}}
+\newcommand{\SVC}{\text{SVC}}
+\newcommand{\AME}{\text{AME}}
+\newcommand{\DEFF}{\text{DEFF}}
+\newcommand{\ESS}{\text{ESS}}
+\newcommand{\PPC}{\text{PPC}}
+\newcommand{\LOO}{\text{LOO}}
+\newcommand{\NCP}{\text{NCP}}
+
+%%% --- Statistics and convergence ---
+\renewcommand{\P}{\operatorname{\mathbb{P}}}
+\newcommand{\cov}{\operatorname{Cov}}
+\newcommand{\corr}{\operatorname{Corr}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\pto}{\overset{p}{\longrightarrow}}
+\newcommand{\dto}{\overset{d}{\longrightarrow}}
+\newcommand{\wto}{\leadsto}
+\newcommand{\asto}{\overset{\mathrm{a.s.}}{\longrightarrow}}
+\newcommand{\iid}{\overset{\mathrm{i.i.d.}}{\sim}}
+\newcommand{\ind}{\overset{\mathrm{ind.}}{\sim}}
+\renewcommand{\L}{\mathcal{L}}
+
+%%% --- Bold math symbols (frequently used) ---
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\balpha}{\boldsymbol{\alpha}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\bgamma}{\boldsymbol{\gamma}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bGamma}{\boldsymbol{\Gamma}}
+\newcommand{\bepsilon}{\boldsymbol{\varepsilon}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bz}{\mathbf{z}}
+
+%%% --- Delimiter shortcuts ---
+\newcommand{\parens}[1]{\left({#1}\right)}
+\newcommand{\pr}{\parens}
+\newcommand{\bk}[1]{\left[{#1}\right]}
+\newcommand{\br}[1]{\left\{{#1}\right\}}
+
+%%% --- Utility ---
+\renewcommand{\t}{\intercal}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\evalbar}{\bigg \rvert}
+\newcommand{\smallevalbar}{\big \rvert}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+%%% --- Collaborator comments ---
+\newcommand{\joonho}[1]{\textit{\color{purple} [Joonho: {#1}]}}
+\newcommand{\edits}[1]{\textit{\color{orange}{[Edits: {#1}]}}}
+\newcommand{\todo}[1]{\textit{\color{red}{[TODO: {#1}]}}}
+
+%%% --- amsart title/section formatting patches ---
+\makeatletter
+\patchcmd{\@settitle}{\uppercasenonmath\@title}{\large}{}{}
+\patchcmd{\@setauthors}{\MakeUppercase}{\vspace{-1em}\normalsize}{}{}
+\patchcmd{\section}{\scshape}{\bfseries}{}{}
+\makeatother
+
+%%% --- Custom paragraph style (bold, inline, no indentation) ---
+\renewcommand{\paragraph}[1]{\noindent\textbf{#1}\enspace}

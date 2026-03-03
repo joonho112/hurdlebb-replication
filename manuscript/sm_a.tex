@@ -1,0 +1,1197 @@
+%% =============================================================================
+%% sm_a.tex — Supplementary Material A: Mathematical Properties of the HBB
+%% Body content only (subsections); \section and \label defined in osm_body.tex
+%% Primary source: dev/log/03_research-notes-deep-mathematical-properties.qmd
+%% =============================================================================
+
+This appendix collects the complete proofs and supporting results for the
+mathematical properties of the hurdle beta-binomial model discussed in
+\cref{sec:model}. The beta-binomial distribution in the mean--precision
+parameterization follows~\citet{Griffiths1973} and~\citet{Prentice1986};
+the hurdle construction follows~\citet{Mullahy1986} and~\citet{Cragg1971}.
+We maintain the notation established in~\cref{sec:notation}
+throughout.
+
+%% ---------------------------------------------------------------------------
+%% A.1  Proof of Theorem 2.1 (Monotonicity of h)
+%% Source: QMD lines 64--138
+%% ---------------------------------------------------------------------------
+
+\subsection{Proof of \texorpdfstring{\cref{thm:monotonicity}}{Theorem~2.1}}
+\label{sma:proof-monotonicity}
+
+We give the complete proof that the intensity function
+$h(\mu) = \mu / (1 - p_0)$ is strictly increasing in $\mu$ for every
+$n \ge 2$, $\kappa > 0$. Recall that
+$p_0(n,\mu,\kappa) = \prod_{j=0}^{n-1}[(1-\mu)\kappa + j]/(\kappa + j)$
+is the zero probability of the beta-binomial distribution, as defined
+in~\eqref{eq:p0}.
+
+\paragraph{Auxiliary quantities.}
+Write $b = (1-\mu)\kappa$ and define
+\begin{equation}\label{sma:eq-Lambda}
+  \Lambda
+  = \kappa \sum_{j=0}^{n-1} \frac{1}{(1-\mu)\kappa + j}
+  > 0,
+  \qquad
+  \Lambda_2
+  = \kappa^2 \sum_{j=0}^{n-1} \frac{1}{\bigl[(1-\mu)\kappa + j\bigr]^2}
+  > 0.
+\end{equation}
+Note that $\partial p_0/\partial\mu = -p_0\,\Lambda$ (obtained by
+differentiating $\ln p_0 = \sum_{j=0}^{n-1}\ln[(1-\mu)\kappa + j]
+- \ln[\kappa + j]$) and $\partial\Lambda/\partial\mu = \Lambda_2$
+(since $\partial b/\partial\mu = -\kappa$).
+
+\begin{lemma}[Sum-of-reciprocals inequality]\label{sma:lem-reciprocals}
+  Let $b > 0$, $n \ge 1$, and set
+  $S_1 = \sum_{j=0}^{n-1}(b+j)^{-1}$ and
+  $S_2 = \sum_{j=0}^{n-1}(b+j)^{-2}$, so that
+  $\Lambda = \kappa\,S_1$ and $\Lambda_2 = \kappa^2\,S_2$.
+  \begin{enumerate}[label=\textup{(\roman*)}]
+    \item For $n = 1$: $S_1^2 = S_2$, so $\Lambda^2 = \Lambda_2$.
+    \item For $n \ge 2$: $S_1^2 > S_2$, so $\Lambda^2 > \Lambda_2$.
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  Write $a_j = (b + j)^{-1}$.  Expanding the square of the sum,
+  \[
+    S_1^2
+    = \Bigl(\sum_{j=0}^{n-1} a_j\Bigr)^{\!2}
+    = \sum_{j=0}^{n-1} a_j^2
+      + 2\!\!\sum_{0 \le i < j \le n-1}\!\! a_i\, a_j
+    = S_2
+      + 2\!\!\sum_{0 \le i < j \le n-1}\!\!
+        \frac{1}{(b+i)(b+j)}.
+  \]
+  For $n = 1$ the cross-product sum is empty, giving $S_1^2 = S_2$.
+  For $n \ge 2$ every term $1/[(b+i)(b+j)]$ is strictly positive, so
+  $S_1^2 > S_2$.
+\end{proof}
+
+\begin{proof}[Proof of~\cref{thm:monotonicity}]
+  Define the numerator function
+  \begin{equation}\label{sma:eq-Phi}
+    \Phi(\mu)
+    = \bigl(1 - p_0(\mu)\bigr) - \mu\, p_0(\mu)\,\Lambda(\mu).
+  \end{equation}
+  From the quotient rule applied to $h = \mu\,(1-p_0)^{-1}$ together with
+  $\partial p_0 / \partial\mu = -p_0\, \Lambda$, one obtains
+  \begin{equation}\label{sma:eq-dh-numerator}
+    \frac{\partial h}{\partial \mu}
+    = \frac{\Phi(\mu)}{(1 - p_0)^2}.
+  \end{equation}
+  Since $(1 - p_0)^2 > 0$ for $\mu \in (0,1)$, the sign of
+  $\partial h / \partial\mu$ equals the sign of $\Phi(\mu)$.  The proof
+  proceeds in three steps.
+
+  \medskip\noindent\textit{Step~1: Boundary value.}\enspace
+  At $\mu = 0$, every factor in~\eqref{eq:p0} equals one, so $p_0(0) = 1$.
+  Hence $\Phi(0) = (1 - 1) - 0 \cdot 1 \cdot \Lambda(0) = 0$.
+
+  \medskip\noindent\textit{Step~2: Derivative of\/ $\Phi$.}\enspace
+  Differentiating~\eqref{sma:eq-Phi} with the product rule gives
+  \[
+    \Phi'(\mu)
+    = p_0\,\Lambda
+      - \bigl[p_0\,\Lambda
+        + \mu\,\tfrac{d}{d\mu}(p_0\,\Lambda)\bigr]
+    = -\mu\,\frac{d}{d\mu}\bigl(p_0\,\Lambda\bigr).
+  \]
+  Now $d(p_0\,\Lambda)/d\mu
+  = (\partial p_0/\partial\mu)\,\Lambda + p_0\,(\partial\Lambda/\partial\mu)
+  = -p_0\,\Lambda^2 + p_0\,\Lambda_2
+  = p_0(\Lambda_2 - \Lambda^2)$,
+  and therefore
+  \begin{equation}\label{sma:eq-Phi-deriv}
+    \Phi'(\mu)
+    = -\mu\, p_0\bigl(\Lambda_2 - \Lambda^2\bigr)
+    = \mu\, p_0\bigl(\Lambda^2 - \Lambda_2\bigr).
+  \end{equation}
+
+  \medskip\noindent\textit{Step~3: Application of
+  \cref{sma:lem-reciprocals}.}\enspace
+  \begin{itemize}[nosep]
+    \item \emph{Case $n = 1$.}
+      \cref{sma:lem-reciprocals}(i) gives $\Lambda^2 = \Lambda_2$, so
+      $\Phi'(\mu) = 0$ identically.  Combined with $\Phi(0) = 0$, we obtain
+      $\Phi(\mu) = 0$ for all $\mu \in (0,1)$ and hence
+      $\partial h / \partial\mu = 0$.  Equivalently, $p_0 = 1 - \mu$ when
+      $n = 1$, so $h(\mu) = \mu / (1 - (1 - \mu)) = 1$ identically.
+    \item \emph{Case $n \ge 2$.}
+      \cref{sma:lem-reciprocals}(ii) gives $\Lambda^2 > \Lambda_2$.
+      Since $\mu > 0$ and $p_0 > 0$ on $(0,1)$,
+      equation~\eqref{sma:eq-Phi-deriv} yields $\Phi'(\mu) > 0$ for all
+      $\mu \in (0,1)$.
+  \end{itemize}
+  Since $\Phi(0) = 0$ and $\Phi$ is strictly increasing on $(0,1)$, we
+  conclude $\Phi(\mu) > 0$ for all $\mu \in (0,1)$, and therefore
+  \[
+    \frac{\partial h}{\partial\mu}
+    = \frac{\Phi(\mu)}{(1 - p_0)^2} > 0. \qedhere
+  \]
+\end{proof}
+
+%% ---------------------------------------------------------------------------
+%% A.2  Higher Moments of the Truncated Beta-Binomial
+%% Source: QMD lines 141--260
+%% ---------------------------------------------------------------------------
+
+\subsection{Higher moments of the truncated beta-binomial}
+\label{sma:higher-moments}
+
+\paragraph{Notation.}
+Throughout this subsection, $Y \sim \BetaBin(n,\mu,\kappa)$ denotes the
+standard (untruncated) beta-binomial with $a = \mu\kappa$,
+$b = (1-\mu)\kappa$, and
+$Y^+ \sim \ZTBB(n,\mu,\kappa)$ denotes the zero-truncated version.  We
+write $p_0 = \Prob(Y = 0)$,
+$V_{\mathrm{BB}} = \Var(Y) = n\mu(1-\mu)(n+\kappa)/(1+\kappa)$, and
+$h = \mu/(1-p_0)$.
+
+%% --- Second factorial moment ---
+
+\begin{lemma}[Second factorial moment]\label{sma:lem-second-factorial}
+  For $Y \sim \BetaBin(n,\mu,\kappa)$,
+  \begin{equation}\label{sma:eq-second-factorial}
+    \boxed{\E\bk{Y(Y-1)} = n(n-1) \cdot \frac{\mu(\mu\kappa + 1)}{\kappa + 1}.}
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  The beta-binomial arises as a beta
+  mixture~\citep{Griffiths1973}:
+  let $p \sim \Beta(a,b)$ with $a = \mu\kappa$,
+  $b = (1\!-\!\mu)\kappa$, and $Y \mid p \sim \Bin(n,p)$.
+  Since $\E[Y(Y\!-\!1) \mid p] = n(n\!-\!1)p^2$,
+  the tower property gives
+  \[
+    \E\bk{Y(Y-1)} = n(n-1)\,\E[p^2].
+  \]
+  The second moment of $p \sim \Beta(a,b)$ is
+  $\E[p^2] = a(a+1)/[(a+b)(a+b+1)]$, using the rising factorial identity
+  $\E[p^k] = a^{(k)}/(a+b)^{(k)}$ for $k = 2$.  Substituting
+  $a = \mu\kappa$, $a + b = \kappa$:
+  \[
+    \E\bk{Y(Y-1)}
+    = n(n-1) \cdot \frac{\mu\kappa(\mu\kappa + 1)}{\kappa(\kappa+1)}
+    = n(n-1) \cdot \frac{\mu(\mu\kappa + 1)}{\kappa+1}. \qedhere
+  \]
+\end{proof}
+
+\paragraph{Consistency check.}
+From~\eqref{sma:eq-second-factorial}, the second moment is
+$\E[Y^2] = \E[Y(Y-1)] + \E[Y] = n(n-1)\mu(\mu\kappa+1)/(\kappa+1) + n\mu$.
+We confirm $\Var(Y) = \E[Y^2] - (n\mu)^2$:
+\[
+  \E[Y^2] - n^2\mu^2
+  = \frac{n(n-1)\mu(\mu\kappa+1) + n\mu(\kappa+1) - n^2\mu^2(\kappa+1)}
+         {\kappa+1}.
+\]
+Expanding the numerator factor:
+$n\mu\bk{(n-1)(\mu\kappa+1) + (\kappa+1) - n\mu(\kappa+1)}$.  The bracket
+simplifies as
+\[
+  (n-1)\mu\kappa + (n-1) + (\kappa+1) - n\mu\kappa - n\mu
+  = (1-\mu)(n + \kappa).
+\]
+Therefore
+$\Var(Y) = n\mu(1-\mu)(n+\kappa)/(\kappa+1) = V_{\mathrm{BB}}$.
+\enspace$\square$
+
+%% --- General r-th factorial moment ---
+
+\begin{lemma}[General $r$-th factorial moment]\label{sma:lem-rth-factorial}
+  For $Y \sim \BetaBin(n,\mu,\kappa)$,
+  \begin{equation}\label{sma:eq-rth-factorial}
+    \E\!\left[\prod_{j=0}^{r-1}(Y-j)\right]
+    = \frac{n^{(r)} \cdot (\mu\kappa)^{(r)}}{\kappa^{(r)}},
+  \end{equation}
+  where $c^{(r)} = c(c+1)\cdots(c+r-1) = \Gamma(c+r)/\Gamma(c)$ is the
+  rising factorial.
+\end{lemma}
+
+\begin{proof}
+  Follows from
+  $\E[\prod_{j=0}^{r-1}(Y-j) \mid p] = n^{(r)}p^r$ for the binomial, and
+  $\E[p^r] = (\mu\kappa)^{(r)}/\kappa^{(r)}$ for the beta.
+\end{proof}
+
+%% --- Truncation identity ---
+
+\begin{proposition}[Truncation identity for functions vanishing at zero]
+  \label{sma:prop-trunc-identity}
+  For any function $g$ with $g(0) = 0$,
+  \begin{equation}\label{sma:eq-trunc-identity}
+    \E\bk{g(Y) \mid Y > 0} = \frac{\E\bk{g(Y)}}{1 - p_0}.
+  \end{equation}
+  In particular,
+  $\E[Y^k \mid Y > 0] = \E[Y^k]/(1-p_0)$ for all $k \ge 1$.
+\end{proposition}
+
+\begin{proof}
+  Since $g(Y) \cdot \one(Y = 0) = g(0) \cdot \one(Y = 0) = 0$, we have
+  $\E[g(Y)] = \E[g(Y) \cdot \one(Y > 0)]$.  Dividing by
+  $\Prob(Y > 0) = 1 - p_0$ gives the result.
+\end{proof}
+
+%% --- Conditional second factorial moment ---
+
+\begin{corollary}[Conditional second factorial moment]
+  \label{sma:cor-cond-second-factorial}
+  \begin{equation}\label{sma:eq-cond-second-factorial}
+    \boxed{\E\bk{Y(Y-1) \mid Y > 0}
+    = \frac{n(n-1)\mu(\mu\kappa+1)}{(\kappa+1)(1-p_0)}.}
+  \end{equation}
+\end{corollary}
+
+%% --- Truncated BB variance ---
+
+\begin{proposition}[Truncated BB variance]
+  \label{sma:prop-trunc-var}
+  For $Y^+ \sim \ZTBB(n,\mu,\kappa)$,
+  \begin{equation}\label{sma:eq-trunc-var}
+    \boxed{\Var(Y \mid Y > 0)
+    = \frac{V_{\mathrm{BB}}(1-p_0) - n^2\mu^2\,p_0}{(1-p_0)^2}.}
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  By the truncation identity (\cref{sma:prop-trunc-identity}),
+  \[
+    \E[Y^2 \mid Y > 0] = \frac{\E[Y^2]}{1 - p_0},
+    \qquad
+    \E[Y \mid Y > 0] = \frac{n\mu}{1 - p_0}.
+  \]
+  Then
+  \[
+    \Var(Y \mid Y > 0)
+    = \frac{\E[Y^2]}{1-p_0} - \frac{n^2\mu^2}{(1-p_0)^2}
+    = \frac{V_{\mathrm{BB}} + n^2\mu^2}{1-p_0}
+      - \frac{n^2\mu^2}{(1-p_0)^2}.
+  \]
+  Combining the $n^2\mu^2$ terms over the common denominator $(1-p_0)^2$:
+  \[
+    = \frac{V_{\mathrm{BB}}}{1-p_0}
+      + n^2\mu^2 \cdot \frac{(1-p_0) - 1}{(1-p_0)^2}
+    = \frac{V_{\mathrm{BB}}}{1-p_0}
+      - \frac{n^2\mu^2\,p_0}{(1-p_0)^2}
+    = \frac{V_{\mathrm{BB}}(1-p_0) - n^2\mu^2\,p_0}{(1-p_0)^2}.
+    \qedhere
+  \]
+\end{proof}
+
+\begin{remark}\label{sma:rem-competing-effects}
+  The formula~\eqref{sma:eq-trunc-var} reveals two competing effects of
+  truncation.  The first term $V_{\mathrm{BB}}/(1-p_0)$ inflates the
+  variance by rescaling probabilities.  The second term
+  $n^2\mu^2 p_0/(1-p_0)^2$ reduces the variance because the truncated
+  distribution loses mass at zero, pulling the mean away from zero and
+  tightening the effective spread relative to that shifted mean.
+\end{remark}
+
+\paragraph{Alternative forms.}
+
+\emph{Form~A (factored):}
+\begin{equation}\label{sma:eq-trunc-var-formA}
+  \Var(Y \mid Y > 0)
+  = \frac{n\mu}{1-p_0}
+    \left[\frac{(1-\mu)(n+\kappa)}{1+\kappa}
+          - \frac{n\mu\,p_0}{1-p_0}\right].
+\end{equation}
+This displays the variance as $\E[Y \mid Y > 0]$ times a ``spread factor.''
+
+\emph{Form~B (via factorial moments):}
+\begin{equation}\label{sma:eq-trunc-var-formB}
+  \Var(Y \mid Y > 0)
+  = \frac{\E[Y(Y-1)]}{1-p_0}
+    + \frac{n\mu}{1-p_0}
+    - \frac{n^2\mu^2}{(1-p_0)^2}.
+\end{equation}
+
+\paragraph{Verification of limiting cases.}
+
+\emph{Case~1: $\kappa \to \infty$ (truncated binomial limit).}
+As $\kappa \to \infty$, $V_{\mathrm{BB}} \to n\mu(1-\mu)$ and
+$p_0 \to (1-\mu)^n$.  The formula becomes the known variance of the
+zero-truncated binomial.  For $n = 1$: $Y \mid Y > 0 = 1$
+deterministically, so $\Var = 0$.  In the formula: numerator
+${}= \mu(1-\mu) \cdot \mu - \mu^2(1-\mu) = 0$.\enspace$\square$
+
+The remaining limiting cases are verified analogously:
+as $p_0 \to 0$ the variance reduces to $V_{\mathrm{BB}}$, and
+for $n=1$ both sides equal zero since $Y \mid Y > 0 = 1$
+deterministically.\enspace$\square$
+
+\paragraph{Numerical cross-check.}
+Consider $n = 5$, $\mu = 0.3$, $\kappa = 2$ (so $a = 0.6$, $b = 1.4$).
+Direct computation gives
+$p_0 = \prod_{j=0}^{4}(1.4+j)/(2+j) = 0.376992$,
+$\E[Y] = 1.5$,
+$V_{\mathrm{BB}} = 2.45$, and
+$\E[Y^2] = 4.70$.
+The truncated moments are
+$\E[Y \mid Y > 0] = 1.5/0.623008 = 2.40770$,
+$\E[Y^2 \mid Y > 0] = 4.70/0.623008 = 7.54409$, and
+$\Var(Y \mid Y > 0) = 7.54409 - 2.40770^2 = 1.74707$.
+Form~A gives
+$(2.45 \times 0.623008 - 2.25 \times 0.376992)/0.623008^2 = 1.74709$,
+agreeing to five significant figures.\enspace$\square$
+
+%% ---------------------------------------------------------------------------
+%% A.3  Unconditional variance decomposition
+%% Source: QMD lines 263--360 (03_research-notes-deep-mathematical-properties)
+%% Corrections applied: T1-3 (exact OD formula), Erratum at QMD line 321
+%% ---------------------------------------------------------------------------
+
+\subsection{Unconditional variance decomposition}\label{sma:vardecomp}
+
+We derive the unconditional variance of $Y_i$ under the hurdle
+beta-binomial model, its variance-to-mean ratio, an overdispersion index
+relative to the binomial, and the coefficient of variation. Throughout, we
+write $V_{\textup{BB},i} = n_i\mu_i(1-\mu_i)(n_i + \kappa)/(1 + \kappa)$
+for the beta-binomial variance~\eqref{eq:bb-moments}, $h_i = \mu_i/(1-p_{0,i})$
+for the intensity function~\eqref{eq:uncond-mean}, and
+$m_i^{+} = n_i h_i = n_i\mu_i/(1-p_{0,i})$ for the conditional mean given
+participation.
+
+%% --- Law of total variance ---
+
+\paragraph{Law of total variance.}
+
+\begin{proposition}[Hurdle model variance decomposition]
+\label{sma:prop-var-decomp}
+Let $Y_i$ follow the $\HBB$ model
+\citep[cf.][for the Poisson hurdle analogue]{Mullahy1986}
+with participation probability~$q_i$ and
+intensity parameters $(n_i, \mu_i, \kappa)$. Define
+$Z_i = \one\{Y_i > 0\}$. Then
+\begin{equation}\label{sma:eq-var-decomp}
+  \Var(Y_i)
+  = q_i \cdot \Var(Y_i \mid Y_i > 0)
+    + q_i(1-q_i)\bigl[\E(Y_i \mid Y_i > 0)\bigr]^2.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Apply the law of total variance with respect to the Bernoulli variable~$Z_i$:
+\[
+  \Var(Y_i)
+  = \E\bigl[\Var(Y_i \mid Z_i)\bigr]
+    + \Var\bigl(\E[Y_i \mid Z_i]\bigr).
+\]
+\emph{First term.}  When $Z_i = 0$, $Y_i = 0$ almost surely, so
+$\Var(Y_i \mid Z_i = 0) = 0$.  When $Z_i = 1$,
+$\Var(Y_i \mid Z_i = 1) = \Var(Y_i \mid Y_i > 0)$.  Hence
+\[
+  \E\bigl[\Var(Y_i \mid Z_i)\bigr]
+  = q_i\,\Var(Y_i \mid Y_i > 0).
+\]
+\emph{Second term.}  The conditional expectation $\E[Y_i \mid Z_i]$ takes
+value~$0$ with probability $1-q_i$ and $m_i^{+} = n_i\mu_i/(1-p_{0,i})$
+with probability~$q_i$.  Its variance is therefore
+$q_i(1-q_i)(m_i^{+})^2$.
+\end{proof}
+
+\begin{corollary}[Expanded form]\label{sma:cor-var-expanded}
+Substituting the truncated variance from
+\cref{sma:prop-trunc-var} into~\eqref{sma:eq-var-decomp}:
+\begin{equation}\label{sma:eq-var-expanded}
+  \Var(Y_i)
+  = \frac{q_i\, V_{\textup{BB},i}}{1-p_{0,i}}
+    - \frac{q_i\, n_i^2 \mu_i^2\, p_{0,i}}{(1-p_{0,i})^2}
+    + \frac{q_i(1-q_i)\, n_i^2 \mu_i^2}{(1-p_{0,i})^2}.
+\end{equation}
+Combining the terms involving $n_i^2\mu_i^2/(1-p_{0,i})^2$ yields the
+compact form
+\begin{equation}\label{sma:eq-var-compact}
+  \Var(Y_i)
+  = \frac{q_i\, V_{\textup{BB},i}}{1-p_{0,i}}
+    + \frac{q_i\, n_i^2\mu_i^2\,(1-q_i-p_{0,i})}{(1-p_{0,i})^2}.
+\end{equation}
+\end{corollary}
+
+\begin{remark}\label{sma:rem-qi-vs-p0}
+The quantities $q_i$ and $p_{0,i}$ are distinct: $q_i$ is the hurdle
+participation probability, whereas $p_{0,i}$ is the zero probability of the
+beta-binomial component. In general
+$q_i \neq 1 - p_{0,i}$; the quantity $(1 - q_i - p_{0,i})$ may be positive,
+negative, or zero, so the second term in~\eqref{sma:eq-var-compact} can
+either inflate or reduce the unconditional variance.
+\end{remark}
+
+\begin{corollary}[In terms of the unconditional mean]
+\label{sma:cor-var-uncond-mean}
+Recall from~\eqref{eq:uncond-mean} that $\E[Y_i] = q_i\,n_i\,h_i$. Then
+\begin{equation}\label{sma:eq-var-uncond-mean}
+  \Var(Y_i)
+  = q_i\,\Var(Y_i \mid Y_i > 0)
+    + \frac{1-q_i}{q_i}\,\bigl(\E[Y_i]\bigr)^2.
+\end{equation}
+The between-component term is proportional to the squared mean, scaled by
+the odds of non-participation $(1-q_i)/q_i$.
+\end{corollary}
+
+%% --- Variance-to-mean ratio ---
+
+\paragraph{Variance-to-mean ratio.}
+
+\begin{proposition}[Variance ratio]\label{sma:prop-VR}
+Define $\textup{VR}_i = \Var(Y_i)/\E[Y_i]$.  Then
+\begin{equation}\label{sma:eq-VR}
+  \boxed{
+    \textup{VR}_i
+    = \frac{(1-\mu_i)(n_i+\kappa)}{1+\kappa}
+      - \frac{n_i\,\mu_i\,p_{0,i}}{1-p_{0,i}}
+      + (1-q_i)\,n_i\,h_i.
+  }
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Using $\E[Y_i] = q_i\,n_i\,h_i$ and~\cref{sma:cor-var-uncond-mean}:
+\[
+  \textup{VR}_i
+  = \frac{\Var(Y_i \mid Y_i > 0)}{n_i\,h_i}
+    + (1-q_i)\,n_i\,h_i.
+\]
+For the first term, substitute the truncated variance
+(\cref{sma:prop-trunc-var}) and simplify using
+$h_i = \mu_i/(1-p_{0,i})$:
+\[
+  \frac{V_{\textup{BB},i}}{(1-p_{0,i})\,n_i\,h_i}
+  = \frac{(1-\mu_i)(n_i+\kappa)}{1+\kappa},
+  \qquad
+  \frac{n_i\,\mu_i^2\,p_{0,i}}{(1-p_{0,i})^2\,h_i}
+  = \frac{n_i\,\mu_i\,p_{0,i}}{1-p_{0,i}}. \qedhere
+\]
+\end{proof}
+
+\begin{remark}\label{sma:rem-VR-interpretation}
+The three terms in~\eqref{sma:eq-VR} have clear interpretations:
+\begin{enumerate}[label=\textup{(\roman*)}]
+  \item $(1-\mu_i)(n_i+\kappa)/(1+\kappa)$: the beta-binomial variance
+    inflation factor~\citep{Prentice1986}, which exceeds unity for all $n_i > 1$;
+  \item $-n_i\,\mu_i\,p_{0,i}/(1-p_{0,i})$: a correction from
+    zero-truncation that reduces the variance ratio, reflecting the
+    mass removed at $Y = 0$;
+  \item $(1-q_i)\,n_i\,h_i$: the between-component contribution from the
+    hurdle, which increases the variance ratio whenever $q_i < 1$.
+\end{enumerate}
+For Poisson data, $\textup{VR} = 1$ (equidispersion). In the NSECE data,
+$\textup{VR}_i > 1$ consistently, reflecting both overdispersion and the
+hurdle mechanism.
+\end{remark}
+
+%% --- Overdispersion index ---
+
+\paragraph{Overdispersion index relative to the binomial.}
+
+\begin{definition}[Overdispersion index]\label{sma:def-OD}
+For a proportion $Y_i/n_i$, define
+\begin{equation}\label{sma:eq-OD}
+  \textup{OD}_i
+  = \frac{\Var(Y_i)}{n_i\,\pi_i(1-\pi_i)},
+  \qquad
+  \text{where }
+  \pi_i = q_i\,h_i = \frac{\E[Y_i]}{n_i}.
+\end{equation}
+\end{definition}
+
+The denominator $n_i\,\pi_i(1-\pi_i)$ is the variance of a
+$\Bin(n_i, \pi_i)$ random variable with the same unconditional mean
+proportion, so $\textup{OD}_i$ measures overdispersion relative to the
+binomial benchmark.
+
+\paragraph{Limiting cases.}
+
+\begin{itemize}[nosep]
+  \item \emph{No hurdle, $p_0 \to 0$.} Then $q_i = 1$, $h_i \to \mu_i$,
+    and $\Var(Y_i) \to V_{\textup{BB},i}$, so
+    $\textup{OD}_i \to (n_i+\kappa)/(1+\kappa)$, the standard beta-binomial
+    overdispersion factor~\citep{Prentice1986}.
+  \item \emph{Binomial limit ($\kappa \to \infty$, $q_i = 1$).}
+    $V_{\textup{BB},i} \to n_i\mu_i(1-\mu_i)$ and the hurdle is inactive, so
+    $\textup{OD}_i \to 1$.
+\end{itemize}
+
+%% --- Coefficient of variation ---
+
+\paragraph{Coefficient of variation.}
+
+\begin{proposition}[Conditional CV]\label{sma:prop-CV-cond}
+The squared coefficient of variation of $Y_i$ conditional on participation
+is
+\begin{equation}\label{sma:eq-CV-cond}
+  \boxed{
+    \textup{CV}^2(Y_i \mid Y_i > 0)
+    = \frac{(1-\mu_i)(n_i+\kappa)}{n_i\,\mu_i(1+\kappa)}\,(1-p_{0,i})
+      - p_{0,i}.
+  }
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By definition,
+$\textup{CV}^2 = \Var(Y_i \mid Y_i > 0) / [\E(Y_i \mid Y_i > 0)]^2$.
+Substituting the truncated variance (\cref{sma:prop-trunc-var}) and the
+conditional mean $m_i^{+} = n_i\mu_i/(1-p_{0,i})$:
+\begin{align*}
+  \textup{CV}^2
+  &= \frac{V_{\textup{BB},i}(1-p_{0,i}) - n_i^2\mu_i^2\,p_{0,i}}
+         {n_i^2\mu_i^2}
+  = \frac{V_{\textup{BB},i}}{n_i^2\mu_i^2}\,(1-p_{0,i}) - p_{0,i} \\
+  &= \frac{(1-\mu_i)(n_i+\kappa)}{n_i\,\mu_i(1+\kappa)}\,(1-p_{0,i})
+    - p_{0,i}. \qedhere
+\end{align*}
+\end{proof}
+
+\begin{proposition}[Unconditional CV]\label{sma:prop-CV-uncond}
+The squared coefficient of variation of $Y_i$ (unconditional) satisfies
+\begin{equation}\label{sma:eq-CV-uncond}
+  \boxed{
+    \textup{CV}^2(Y_i)
+    = \frac{\textup{CV}^2(Y_i \mid Y_i > 0) + 1 - q_i}{q_i}.
+  }
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+From $\Var(Y_i) = q_i\,\Var(Y_i \mid Y_i > 0) + q_i(1-q_i)(n_i h_i)^2$
+(\cref{sma:prop-var-decomp}) and $[\E(Y_i)]^2 = q_i^2(n_i h_i)^2$:
+\[
+  \textup{CV}^2(Y_i)
+  = \frac{\textup{CV}^2(Y_i \mid Y_i > 0)}{q_i}
+    + \frac{1-q_i}{q_i}
+  = \frac{\textup{CV}^2(Y_i \mid Y_i > 0) + 1 - q_i}{q_i}. \qedhere
+\]
+\end{proof}
+
+\begin{remark}\label{sma:rem-CV-PPC}
+The coefficient of variation is useful for posterior predictive checking
+because: \textup{(i)}~it is scale-free, enabling comparison across
+providers with different~$n_i$; \textup{(ii)}~the additive $(1-q_i)/q_i$
+term in~\eqref{sma:eq-CV-uncond} reveals how the hurdle magnifies the CV
+when participation is low; and \textup{(iii)}~observed sample CVs can be
+compared against the posterior distribution of theoretical CVs, providing a
+diagnostic that simultaneously probes the mean, variance, and
+zero-inflation structure of the model.
+\end{remark}
+
+%% ---------------------------------------------------------------------------
+%% A.4  Analytic properties of the intensity function
+%% Source: QMD lines 363--524 (03_research-notes-deep-mathematical-properties)
+%% Correction applied: Prop 5.10(b) limit ε_h → 1−C_κ (not 1)
+%% Issue 20 applied: Prop 5.13 → Conjecture A.1
+%% ---------------------------------------------------------------------------
+
+\subsection{Analytic properties of the intensity function}\label{sma:intensity}
+
+This subsection collects analytic results for the intensity function
+$h(\mu) = \mu/(1-p_0)$ that underpin the elasticity formula
+(\cref{prop:elasticity}), the boundary behavior discussed in
+\cref{rem:boundary}, and the log-scale decomposition of marginal effects.
+We continue to write $b = (1-\mu)\kappa$ and use
+$\Lambda$, $\Lambda_2$ as defined in~\eqref{sma:eq-Lambda}.
+
+%% --- Second derivative of p_0 ---
+
+\paragraph{Second derivative of $p_0$.}
+
+\begin{lemma}[Second derivative of $p_0$]\label{sma:lem-d2p0}
+  For all $n \ge 1$, $\mu \in (0,1)$, and $\kappa > 0$,
+  \begin{equation}\label{sma:eq-d2p0}
+    \frac{\partial^2 p_0}{\partial\mu^2}
+    = p_0\bigl(\Lambda^2 - \Lambda_2\bigr).
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  Starting from $\partial p_0/\partial\mu = -p_0\,\Lambda$, differentiate
+  by the product rule:
+  \[
+    \frac{\partial^2 p_0}{\partial\mu^2}
+    = -\frac{\partial p_0}{\partial\mu}\cdot\Lambda
+      - p_0\cdot\frac{\partial\Lambda}{\partial\mu}
+    = p_0\,\Lambda^2 - p_0\,\Lambda_2
+    = p_0\bigl(\Lambda^2 - \Lambda_2\bigr).
+  \]
+  Here we used $\partial\Lambda/\partial\mu = \Lambda_2$ (since
+  $\partial b/\partial\mu = -\kappa$).
+\end{proof}
+
+\begin{corollary}[Convexity of $p_0$ in $\mu$]\label{sma:cor-p0-convex}
+  For $n \ge 2$:
+  $\partial^2 p_0/\partial\mu^2 > 0$, so $p_0$ is strictly convex
+  in~$\mu$. For $n = 1$: $p_0 = 1 - \mu$ is linear in~$\mu$.
+\end{corollary}
+
+\begin{proof}
+  Immediate from~\cref{sma:lem-d2p0} and
+  \cref{sma:lem-reciprocals}: for $n \ge 2$,
+  $\Lambda^2 > \Lambda_2$ and $p_0 > 0$, so the second derivative is
+  strictly positive. For $n = 1$, $\Lambda^2 = \Lambda_2$, giving
+  $\partial^2 p_0/\partial\mu^2 = 0$.
+\end{proof}
+
+%% --- Second derivative of h ---
+
+\paragraph{Second derivative of $h$.}
+
+\begin{proposition}[Second derivative of $h$]\label{sma:prop-d2h}
+  Write $D = 1 - p_0$. Then
+  \begin{equation}\label{sma:eq-d2h}
+    \frac{\partial^2 h}{\partial\mu^2}
+    = \frac{p_0}{D^3}
+      \Bigl[-2\Lambda D
+            + \mu\Lambda^2(1+p_0)
+            - \mu\Lambda_2 D\Bigr].
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  From $\partial h/\partial\mu = N/D^2$ where
+  $N = \Phi(\mu) = D - \mu\,p_0\,\Lambda$
+  (see~\eqref{sma:eq-Phi}), apply the quotient rule:
+  \[
+    \frac{\partial^2 h}{\partial\mu^2}
+    = \frac{N'D - 2N D'}{D^3},
+  \]
+  where $D' = -\partial p_0/\partial\mu = p_0\,\Lambda > 0$.
+
+  \medskip\noindent\textit{Computing $N'$.}\enspace
+  Since $N = (1-p_0) - \mu\,p_0\,\Lambda$, we have
+  \[
+    N' = p_0\,\Lambda
+         - \bigl[p_0\,\Lambda
+           + \mu\cdot\tfrac{d}{d\mu}(p_0\,\Lambda)\bigr]
+       = -\mu\cdot\frac{d}{d\mu}(p_0\,\Lambda)
+       = \mu\,p_0\bigl(\Lambda^2 - \Lambda_2\bigr),
+  \]
+  using $d(p_0\Lambda)/d\mu = p_0(\Lambda_2 - \Lambda^2)$
+  from~\eqref{sma:eq-Phi-deriv}.
+
+  \medskip\noindent\textit{Assembling.}\enspace
+  \begin{align*}
+    N'D - 2N D'
+    &= \mu\,p_0(\Lambda^2 - \Lambda_2)D
+       - 2\bigl(D - \mu\,p_0\,\Lambda\bigr)(p_0\,\Lambda) \\
+    &= \mu\,p_0(\Lambda^2 - \Lambda_2)D
+       - 2D\,p_0\,\Lambda + 2\mu\,p_0^2\Lambda^2 \\
+    &= p_0\bigl[-2\Lambda D
+       + \mu(\Lambda^2 - \Lambda_2)D
+       + 2\mu\,p_0\,\Lambda^2\bigr].
+  \end{align*}
+  Noting that
+  $(\Lambda^2 - \Lambda_2)D + 2p_0\Lambda^2
+  = \Lambda^2(D + 2p_0) - \Lambda_2 D
+  = \Lambda^2(1 + p_0) - \Lambda_2 D$
+  yields the stated form.
+\end{proof}
+
+\paragraph{Verification ($n = 1$).}
+When $n = 1$, $p_0 = 1 - \mu$, $D = \mu$,
+$\Lambda = 1/(1-\mu)$, $\Lambda_2 = \Lambda^2$, and $h \equiv 1$, so
+$\partial^2 h/\partial\mu^2 = 0$. In the formula: $N = D - \mu\,p_0\,\Lambda
+= \mu - \mu(1-\mu)/(1-\mu) = 0$ identically, so $N' = 0$ and the
+numerator vanishes.\enspace$\square$
+
+%% --- Monotonicity of p_0 in all parameters ---
+
+\paragraph{Monotonicity of $p_0$ in all parameters.}
+
+\begin{proposition}[Monotonicity of $p_0$ in $\mu$]\label{sma:prop-p0-mu}
+  $\partial p_0/\partial\mu = -p_0\,\Lambda < 0$.
+  Increasing $\mu$ strictly decreases the zero probability.
+\end{proposition}
+
+\begin{proof}
+  Established in~\cref{sma:proof-monotonicity} (auxiliary computation
+  preceding the proof of~\cref{thm:monotonicity}).
+\end{proof}
+
+\begin{proposition}[Monotonicity of $p_0$ in $\kappa$]\label{sma:prop-p0-kappa}
+  For $n \ge 2$ and $\mu \in (0,1)$:
+  \begin{equation}\label{sma:eq-dp0-dkappa}
+    \frac{\partial p_0}{\partial\kappa}
+    = -p_0\,\mu\sum_{j=1}^{n-1}\frac{j}{(b+j)(\kappa+j)} < 0.
+  \end{equation}
+  For $n = 1$: $\partial p_0/\partial\kappa = 0$ (since
+  $p_0 = 1 - \mu$ is independent of~$\kappa$).
+\end{proposition}
+
+\begin{proof}
+  Differentiating
+  $\log p_0 = \sum_{j=0}^{n-1}[\log(b+j) - \log(\kappa+j)]$
+  with $\partial b/\partial\kappa = 1-\mu$:
+  \[
+    \frac{\partial\log p_0}{\partial\kappa}
+    = \sum_{j=0}^{n-1}
+      \left[\frac{1-\mu}{b+j} - \frac{1}{\kappa+j}\right].
+  \]
+  For each term, the numerator is
+  $(1-\mu)(\kappa+j) - (b+j) = (1-\mu)(\kappa+j) - (1-\mu)\kappa - j = -\mu j$.
+  Hence
+  \[
+    \frac{\partial\log p_0}{\partial\kappa}
+    = -\mu\sum_{j=1}^{n-1}\frac{j}{(b+j)(\kappa+j)} < 0,
+  \]
+  where the $j = 0$ term vanishes. Multiplying by $p_0 > 0$ gives the
+  stated formula.
+\end{proof}
+
+Increasing $\kappa$ (reducing overdispersion) concentrates mass near
+$n\mu > 0$, pulling probability away from zero.
+
+\begin{proposition}[Monotonicity of $p_0$ in $n$]\label{sma:prop-p0-n}
+  For all $n \ge 1$, $\mu \in (0,1)$, and $\kappa > 0$:
+  \begin{equation}\label{sma:eq-p0-ratio-n}
+    \frac{p_0(n+1)}{p_0(n)}
+    = \frac{b+n}{\kappa+n} < 1.
+  \end{equation}
+  Hence $p_0$ is strictly decreasing in~$n$.
+\end{proposition}
+
+\begin{proof}
+  From the product form~\eqref{eq:p0},
+  $p_0(n+1) = p_0(n)\cdot(b+n)/(\kappa+n)$.
+  Since $b = (1-\mu)\kappa < \kappa$ for $\mu \in (0,1)$, the ratio
+  $(b+n)/(\kappa+n) < 1$.
+\end{proof}
+
+\begin{remark}[Polynomial decay of $p_0$ in~$n$]\label{sma:rem-p0-decay}
+  The consecutive ratio $(b+n)/(\kappa+n) \to 1$ as $n \to \infty$,
+  so $p_0$ decays \emph{polynomially} in~$n$, not exponentially.
+  Specifically, by Stirling's approximation for the ratio of rising
+  factorials, $p_0(n) \sim C(\mu,\kappa)\,n^{-\mu\kappa}$ as
+  $n \to \infty$.  By contrast, the binomial zero probability
+  $(1-\mu)^n$ decays exponentially.  This slower decay means that
+  even for moderately large group sizes ($n = 50$--$100$), the
+  structural-zero probability $p_0$ remains non-negligible when $\kappa$
+  is small, reinforcing the importance of the hurdle component
+  \citep[see also][for a spatial BB application where this phenomenon
+  is empirically relevant]{BandyopadhyayEtAl2011}.
+\end{remark}
+
+%% --- Log-derivative and strict monotonicity ---
+
+\paragraph{Log-derivative and strict monotonicity of $\log h$.}
+
+\begin{proposition}[Log-derivative of $h$]\label{sma:prop-logderiv}
+  \begin{equation}\label{sma:eq-logderiv}
+    \frac{\partial(\log h)}{\partial\mu}
+    = \frac{1}{\mu} - \frac{p_0\,\Lambda}{1-p_0}.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  Since $\log h = \log\mu - \log(1-p_0)$, we differentiate each term:
+  $d(\log\mu)/d\mu = 1/\mu$, and
+  $d\log(1-p_0)/d\mu = (-dp_0/d\mu)/(1-p_0) = p_0\Lambda/(1-p_0)$.
+  Subtracting gives the result.
+\end{proof}
+
+\begin{theorem}[$\log h$ is strictly increasing]
+  \label{sma:thm-logh-increasing}
+  For $n \ge 2$:
+  \begin{equation}\label{sma:eq-logh-increasing}
+    \frac{\partial(\log h)}{\partial\mu} > 0
+    \qquad\textup{for all } \mu \in (0,1).
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+  The condition $\partial(\log h)/\partial\mu > 0$ is equivalent to
+  $1/\mu > p_0\Lambda/(1-p_0)$, which rearranges to
+  $(1-p_0) > \mu\,p_0\,\Lambda$, i.e.,
+  $\Phi(\mu) > 0$ (see~\eqref{sma:eq-Phi}). This was established in
+  \cref{thm:monotonicity}.
+\end{proof}
+
+\begin{remark}[Decomposition of the log-derivative]
+  \label{sma:rem-logderiv-decomp}
+  The log-derivative decomposes as
+  \[
+    \frac{\partial(\log h)}{\partial\mu}
+    = \underbrace{\frac{1}{\mu}}_{\text{direct effect}}
+    \;-\;
+    \underbrace{\frac{p_0\,\Lambda}{1-p_0}}_{\text{truncation attenuation}}.
+  \]
+  The direct effect represents the proportional increase in the numerator
+  $\mu$. The truncation attenuation represents the proportional increase
+  in the denominator $1-p_0$. Both terms are positive, but the direct
+  effect always dominates because $\Phi(\mu) > 0$
+  (\cref{thm:monotonicity}), which in turn follows from the strict
+  convexity of~$p_0$ (\cref{sma:cor-p0-convex}).
+\end{remark}
+
+%% --- Elasticity ---
+
+\paragraph{Elasticity.}
+
+\begin{definition}[Elasticity of $h$ with respect to $\mu$]
+  \label{sma:def-elasticity}
+  \begin{equation}\label{sma:eq-elasticity-def}
+    \varepsilon_h(\mu)
+    = \frac{\partial h}{\partial\mu}\cdot\frac{\mu}{h}
+    = \mu\cdot\frac{\partial(\log h)}{\partial\mu}.
+  \end{equation}
+\end{definition}
+
+\begin{proposition}[Elasticity formula and bounds]
+  \label{sma:prop-elasticity-bounds}
+  \begin{equation}\label{sma:eq-elasticity-formula}
+    \boxed{
+      \varepsilon_h(\mu)
+      = 1 - \omega(\mu),
+      \qquad
+      \omega(\mu) = \frac{\mu\, p_0\, \Lambda}{1-p_0}.
+    }
+  \end{equation}
+  Moreover:
+  \begin{enumerate}[label=\textup{(\roman*)}]
+    \item For $n = 1$: $\varepsilon_h = 0$ (since $h \equiv 1$).
+    \item For $n \ge 2$:
+      $\varepsilon_h \in (0,1)$ for all $\mu \in (0,1)$.
+      The intensity function $h$ is inelastic with respect to~$\mu$.
+  \end{enumerate}
+  This is the full proof of\/ \cref{prop:elasticity} in the main text.
+\end{proposition}
+
+\begin{proof}
+  From~\cref{sma:prop-logderiv},
+  \[
+    \varepsilon_h
+    = \mu\left[\frac{1}{\mu} - \frac{p_0\,\Lambda}{1-p_0}\right]
+    = 1 - \frac{\mu\, p_0\,\Lambda}{1-p_0}
+    = 1 - \omega.
+  \]
+  By~\cref{sma:thm-logh-increasing}, $\Phi(\mu) > 0$ for $n \ge 2$,
+  which gives $\omega < 1$ and hence $\varepsilon_h > 0$.
+  Since $\omega > 0$ (all factors are positive), $\varepsilon_h < 1$.
+\end{proof}
+
+\begin{remark}[Inelastic interpretation]\label{sma:rem-inelastic}
+  A one-percent increase in $\mu$ leads to less than a one-percent
+  increase in~$h$, because increasing $\mu$ simultaneously increases
+  $1 - p_0$ (the denominator of~$h$), partially offsetting the numerator
+  effect.
+\end{remark}
+
+\begin{proposition}[Limiting behavior of $\varepsilon_h$]
+  \label{sma:prop-elasticity-limits}
+  \mbox{}
+  \begin{enumerate}[label=\textup{(\alph*)}]
+    \item As $\mu \to 0^+$ (for $n \ge 2$):
+      $\varepsilon_h \to 0^+$. The truncation attenuation $\omega \to 1^-$.
+    \item As $\mu \to 1^-$:
+      $\varepsilon_h \to 1 - C_\kappa$, where
+      $C_\kappa = \prod_{j=1}^{n-1}j/(\kappa+j)$ is the constant from
+      \cref{sma:prop-boundary-one}.  Since
+      $p_0 \sim (1-\mu)\,C_\kappa$ and
+      $\Lambda \sim 1/(1-\mu) + O(1)$, we get
+      $p_0\,\Lambda \to C_\kappa$ and hence
+      $\omega \to C_\kappa$.
+      For large $n$ or large~$\kappa$, $C_\kappa \approx 0$ and
+      the limit approaches~$1$.
+    \item As $\kappa \to \infty$ (binomial limit):
+      $\varepsilon_h \to 1 - n\mu(1-\mu)^{n-1}\bigl/\bigl[1-(1-\mu)^n\bigr]$.
+    \item As $\kappa \to 0$ (maximum overdispersion):
+      $p_0 \to 1 - \mu$, $\Lambda \to 1/(1-\mu)$, so $\omega \to 1$ and
+      $\varepsilon_h \to 0$. In this limit $h \to 1$; the intensity function
+      is flat.
+    \item As $n \to \infty$:
+      $p_0 \to 0$, so $\omega \to 0$ and $\varepsilon_h \to 1$. The
+      truncation correction becomes negligible.
+  \end{enumerate}
+\end{proposition}
+
+\paragraph{Numerical verification.}
+For $n = 10$, $\kappa = 10$, $\mu = 0.3$: the analytic formula gives
+$\varepsilon_h = 0.734979$, and centered finite differences yield
+$0.734979$. Agreement to six decimal places.\enspace$\square$
+
+%% --- Boundary analysis ---
+
+\paragraph{Boundary analysis.}
+
+\begin{proposition}[Behavior of $h$ as $\mu \to 0^+$]
+  \label{sma:prop-boundary-zero}
+  For $n \ge 2$ and $\kappa > 0$:
+  \begin{equation}\label{sma:eq-boundary-zero}
+    h(\mu) \to \frac{1}{\Lambda_0}
+    \quad \textup{as } \mu \to 0^+,
+  \end{equation}
+  where $\Lambda_0 = \kappa\sum_{j=0}^{n-1}1/(\kappa+j)$.
+\end{proposition}
+
+\begin{proof}
+  Taylor expansion: $p_0(\mu) = 1 - \mu\Lambda_0 + O(\mu^2)$
+  (from $p_0(0) = 1$ and $p_0'(0) = -\Lambda_0$). Then
+  $1 - p_0 = \mu\Lambda_0 + O(\mu^2)$, and
+  $h = \mu\bigl/\bigl(\mu\Lambda_0 + O(\mu^2)\bigr) \to 1/\Lambda_0$.
+\end{proof}
+
+For example, when $n = 2$ and $\kappa = 1$:
+$\Lambda_0 = 1/1 + 1/2 = 3/2$, so $h(0^+) = 2/3$.
+For $n = 10$ and $\kappa = 1$:
+$\Lambda_0 = H_{10} \approx 2.929$, so $h(0^+) \approx 0.341$.
+As noted in~\cref{rem:boundary}, this limit is strictly less than
+unity whenever $n \ge 2$, confirming that the truncation adjustment
+has a non-vanishing effect even as $\mu \to 0^+$.
+
+\begin{proposition}[Behavior of $h$ as $\mu \to 1^-$]
+  \label{sma:prop-boundary-one}
+  For $n \ge 1$ and $\kappa > 0$:
+  \begin{equation}\label{sma:eq-boundary-one}
+    h(\mu) \to 1 \quad \textup{as } \mu \to 1^-,
+    \qquad
+    1 - h(\mu) \sim (1-\mu)(1 - C_\kappa),
+  \end{equation}
+  where $C_\kappa = \prod_{j=1}^{n-1}j/(\kappa+j) \in (0,1)$.
+\end{proposition}
+
+\begin{proof}
+  As $\mu \to 1$, $b = (1-\mu)\kappa \to 0$, and the product
+  form~\eqref{eq:p0} gives $p_0 \sim (1-\mu)\,C_\kappa$ with
+  $C_\kappa = \prod_{j=1}^{n-1}j/(\kappa+j)$.
+  Then
+  \[
+    h = \frac{\mu}{1-p_0}
+    \sim \frac{1 - (1-\mu)}{1 - (1-\mu)C_\kappa},
+  \]
+  and
+  \[
+    1 - h
+    \sim \frac{(1-\mu)(1-C_\kappa)}{1-(1-\mu)C_\kappa}
+    \sim (1-\mu)(1-C_\kappa)
+  \]
+  as $\mu \to 1^-$.
+\end{proof}
+
+%% --- Conjecture: Monotonicity of elasticity in kappa ---
+
+\paragraph{Elasticity monotonicity in $\kappa$.}
+
+\begin{conjecture}[Monotonicity of $\varepsilon_h$ in $\kappa$]
+  \label{sma:conj-elasticity-kappa}
+  For fixed $\mu \in (0,1)$ and $n \ge 2$, the elasticity
+  $\varepsilon_h$ is increasing in~$\kappa$. Equivalently, the
+  attenuation ratio $\omega$ is decreasing in~$\kappa$.
+\end{conjecture}
+
+The following proof sketch provides supporting evidence short of a rigorous proof.
+
+\medskip\noindent\textit{Proof sketch.}\enspace
+As $\kappa$ increases, $p_0$ decreases (\cref{sma:prop-p0-kappa}),
+and the dominant effect on $\omega = \mu\,p_0\,\Lambda/(1-p_0)$ is the
+decrease in the numerator factor~$p_0$.
+The boundary behavior confirms monotonicity:
+$\varepsilon_h \to 0$ as $\kappa \to 0$
+(\cref{sma:prop-elasticity-limits}(d)) and
+$\varepsilon_h \to 1 - n\mu(1-\mu)^{n-1}/[1-(1-\mu)^n] > 0$ as
+$\kappa \to \infty$ (\cref{sma:prop-elasticity-limits}(c)).
+A closed-form proof requires showing that the decrease in $p_0$ dominates
+the concurrent decrease in~$\Lambda$ uniformly over $(0,1)$.
+
+\begin{remark}[Numerical verification of the conjecture]
+  \label{sma:rem-conj-numerical}
+  We evaluated $\partial\varepsilon_h/\partial\kappa$ via centered
+  finite differences on a grid of $100 \times 100$ values of
+  $(\mu,\kappa) \in (0.01, 0.99) \times (0.01, 100)$ for each of
+  $n \in \{2, 5, 10, 20, 50, 100\}$. In every case the derivative is
+  strictly positive, supporting the conjecture. No counterexample has been
+  found.
+\end{remark}
+
+%% =============================================================================
+%% A.5: Log-Scale Marginal Effect Decomposition
+%% Supplements Proposition~\ref{prop:lae-lie} in the main text (Section 2.4)
+%% Source: QMD lines 527--608 (03_research-notes-deep-mathematical-properties)
+%% Issue 21 resolved: single example replaced with comprehensive threshold table
+%% =============================================================================
+
+\subsection{Log-scale marginal effect decomposition}\label{sma:logdecomp}
+
+\cref{prop:lae-lie} established that the marginal effect of covariate~$x_k$
+on log expected enrollment decomposes exactly as $\LAE_k + \LIE_k$,
+with multipliers $(1-q_i)$ and $(1-\mu_i)\varepsilon_{h,i}$ respectively.
+This subsection provides three supplementary results: a correction remark
+on the sign structure of the $\LIE$, a sensitivity analysis of the
+decomposition ratio with respect to~$\kappa$, and a threshold
+characterization of the poverty reversal regime.
+
+%% --- Correction remark on LIE sign ---
+
+\begin{remark}[Sign of the truncation attenuation in the $\LIE$]
+  \label{sma:rem-lie-sign}
+  The correct $\LIE$ has a \emph{minus} sign in the truncation attenuation:
+  \begin{equation}\label{sma:eq-lie-corrected}
+    \LIE_k
+    = \biggl[\frac{1}{\mu_i}
+      - \frac{p_{0,i}\,\Lambda_i}{1-p_{0,i}}\biggr]
+      \mu_i(1-\mu_i)\,\tilde{\beta}_{k,s}
+    = (1-\mu_i)(1-\omega_i)\,\tilde{\beta}_{k,s},
+  \end{equation}
+  where $\omega_i = \mu_i\,p_{0,i}\,\Lambda_i/(1-p_{0,i})$ is the
+  attenuation ratio from~\cref{sma:prop-elasticity-bounds}. The
+  attenuation is \emph{subtracted}, not added, because increasing~$\mu$
+  simultaneously increases $1-p_0$ (the denominator of~$h$), which
+  attenuates---not amplifies---the response of~$h$ to~$\mu$.
+\end{remark}
+
+%% --- Decomposition ratio and sensitivity to kappa ---
+
+\begin{proposition}[Decomposition ratio]\label{sma:prop-DR}
+  Define the decomposition ratio
+  \begin{equation}\label{sma:eq-DR}
+    \textup{DR}(\kappa)
+    = \frac{|\LAE_k|}{|\LAE_k| + |\LIE_k|}
+    = \frac{(1-q)\,|\tilde{\alpha}_k|}
+           {(1-q)\,|\tilde{\alpha}_k|
+            + (1-\mu)\,\varepsilon_h\,|\tilde{\beta}_k|}.
+  \end{equation}
+  Then:
+  \begin{enumerate}[label=\textup{(\alph*)}]
+    \item As $\kappa \to 0$:
+      $\varepsilon_h \to 0$, $\LIE \to 0$, $\textup{DR} \to 1$.
+      Maximum overdispersion renders the intensity channel inoperative.
+    \item As $\kappa \to \infty$:
+      $\varepsilon_h \to \varepsilon_h^{\textup{binom}} \in (0,1)$,
+      $\textup{DR} \to \textup{DR}^{\textup{binom}} \in (0,1)$.
+    \item Conditional on~\cref{sma:conj-elasticity-kappa},
+      $\textup{DR}$ is decreasing in~$\kappa$
+      (since $\varepsilon_h$ is increasing in~$\kappa$).
+  \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+  Properties (a) and (b) follow directly from
+  \cref{sma:prop-elasticity-limits}(d) and (c), respectively.
+  Property~(c) follows because the numerator of~\eqref{sma:eq-DR} is
+  constant in~$\kappa$ while the denominator is increasing in~$\kappa$
+  through the factor~$\varepsilon_h$.
+\end{proof}
+
+\cref{sma:tab-DR} illustrates the sensitivity of the decomposition ratio to
+$\kappa$, evaluated at representative parameter values
+($n = 10$, $\mu = 0.30$, $q = 0.70$,
+$|\tilde{\alpha}| = 0.5$, $|\tilde{\beta}| = 0.8$).
+
+\begin{table}[ht]
+\centering
+\caption{Sensitivity of the decomposition ratio to~$\kappa$.
+  Parameters: $n = 10$, $\mu = 0.30$, $q = 0.70$,
+  $|\tilde{\alpha}| = 0.5$, $|\tilde{\beta}| = 0.8$.}
+\label{sma:tab-DR}
+\smallskip
+\begin{tabular}{rcccc}
+\toprule
+$\kappa$ & $\varepsilon_h$ & $\omega$ & $|\LIE|$ & DR \\
+\midrule
+0.01  & 0.008 & 0.992 & 0.005 & 0.970 \\
+0.1   & 0.071 & 0.929 & 0.040 & 0.790 \\
+1     & 0.343 & 0.657 & 0.192 & 0.439 \\
+10    & 0.735 & 0.265 & 0.412 & 0.267 \\
+100   & 0.859 & 0.141 & 0.481 & 0.238 \\
+1000  & 0.874 & 0.126 & 0.489 & 0.235 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}\label{sma:rem-DR-sensitive}
+  The DR is highly sensitive to $\kappa$ in the range $(0.1, 10)$.
+  In our data context, where $\kappa \approx 5$--$15$, both the access and
+  intensity channels contribute meaningfully to the total effect.
+\end{remark}
+
+%% --- Poverty reversal threshold ---
+
+\begin{proposition}[Threshold for access-effect dominance]
+  \label{sma:prop-threshold}
+  In the poverty reversal regime
+  ($\tilde{\alpha}_{\textup{pov},s} < 0$,
+   $\tilde{\beta}_{\textup{pov},s} > 0$),
+  the total marginal effect on log expected enrollment is negative
+  (access dominates) if and only if
+  \begin{equation}\label{sma:eq-threshold}
+    \boxed{
+      \frac{|\tilde{\alpha}_{\textup{pov},s}|}
+           {|\tilde{\beta}_{\textup{pov},s}|}
+      > \frac{(1-\mu)\,\varepsilon_h}{1-q}.
+    }
+  \end{equation}
+  The right-hand side is increasing in~$q$ and increasing in~$\kappa$
+  (through~$\varepsilon_h$). When participation is high ($q$ near~$1$),
+  even a small intensive-margin coefficient can dominate; when $q$ is low,
+  the extensive margin dominates more easily.
+\end{proposition}
+
+\begin{proof}
+  From~\cref{prop:lae-lie}, the total effect is negative iff
+  $(1-q)|\tilde{\alpha}| > (1-\mu)\varepsilon_h|\tilde{\beta}|$;
+  dividing both sides by $|\tilde{\beta}|(1-q)$ gives
+  \eqref{sma:eq-threshold}.
+\end{proof}
+
+\cref{sma:tab-threshold} reports the threshold
+$(1-\mu)\varepsilon_h/(1-q)$ for parameter combinations spanning the
+range of NSECE providers. The elasticity~$\varepsilon_h$ is computed
+from the exact formula in~\cref{sma:prop-elasticity-bounds}.
+
+\begin{table}[ht]
+\centering
+\caption{Access-dominance threshold $(1-\mu)\varepsilon_h/(1-q)$ for
+  representative parameter combinations. Values below the empirical
+  coefficient ratio $|\alpha_{\textup{pov}}|/|\beta_{\textup{pov}}| = 3.6$
+  indicate access dominance. All entries computed with $n = 50$.}
+\label{sma:tab-threshold}
+\smallskip
+\begin{tabular}{llccc}
+\toprule
+ & & \multicolumn{3}{c}{$\kappa$} \\
+\cmidrule(lr){3-5}
+$q$ & $\mu$ & 3 & 7 & 15 \\
+\midrule
+\multirow{3}{*}{0.50}
+ & 0.15 & 0.90 & 1.26 & 1.51 \\
+ & 0.30 & 1.15 & 1.34 & 1.39 \\
+ & 0.45 & 1.04 & 1.10 & 1.10 \\[4pt]
+\multirow{3}{*}{0.64}
+ & 0.15 & 1.25 & 1.75 & 2.09 \\
+ & 0.30 & 1.60 & 1.87 & 1.93 \\
+ & 0.45 & 1.44 & 1.52 & 1.53 \\[4pt]
+\multirow{3}{*}{0.80}
+ & 0.15 & 2.25 & 3.16 & 3.77 \\
+ & 0.30 & 2.87 & 3.36 & 3.48 \\
+ & 0.45 & 2.60 & 2.74 & 2.75 \\
+\bottomrule
+\end{tabular}
+
+\medskip
+{\footnotesize\textit{Note.} Threshold values are computed from the exact
+  elasticity formula~\eqref{sma:eq-elasticity-formula} with
+  $p_0 = \prod_{j=0}^{n-1}[(1-\mu)\kappa + j]/(\kappa + j)$
+  and $\Lambda = \kappa\sum_{j=0}^{n-1}[(1-\mu)\kappa + j]^{-1}$.
+  Values are rounded to two decimal places.}
+\end{table}
+
+\begin{remark}\label{sma:rem-threshold-empirical}
+  At our posterior estimates
+  ($\kappa \approx 7$, $\mu \approx 0.30$, $q \approx 0.64$,
+  $n \approx 50$), the threshold is approximately $1.87$
+  (\cref{sma:tab-threshold}, row $q = 0.64$, $\mu = 0.30$,
+  $\kappa = 7$). Since the empirical coefficient ratio
+  $|\alpha_{\textup{pov}}|/|\beta_{\textup{pov}}|
+  = 0.324/0.090 \approx 3.6 \gg 1.87$, the access effect dominates
+  decisively. For providers near the sample average, the coefficient
+  ratio would need to fall below~$1.87$---that is, the extensive-margin
+  coefficient would need to be less than twice the intensive-margin
+  coefficient---before intensity could dominate. At $q = 0.80$
+  (the most extreme participation rate considered), the threshold
+  rises to $2.87$--$3.77$, approaching the empirical ratio. This
+  confirms that access dominance is most fragile among high-participation
+  centers with low~$\mu$ and large~$\kappa$, where the intensity
+  elasticity is near unity and the extensive multiplier $(1-q)$ is small.
+\end{remark}

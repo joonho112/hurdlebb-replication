@@ -1,0 +1,116 @@
+%% =============================================================================
+%% sm_d7_design_effects.tex — SM-D, Subsection D.7: Design Effect Diagnostics
+%% Body content only (\subsection level); parent structure in sm_d.tex
+%% Source: ST4_design_effect_ratios (R-generated), SF6_sandwich_detail.pdf
+%% Cross-refs to SM-C DER theory: smc:der, smc:prop-der-classification
+%% =============================================================================
+
+\subsection{Design effect diagnostics}
+\label{smd:design-effects}
+
+The design effect ratio (DER), defined in \eqref{eq:der} and
+classified in~\cref{smc:prop-der-classification}, quantifies the
+factor by which the survey design inflates each parameter's variance
+beyond the model-based (SRS) variance.  \Cref{smd:tab-der} presents
+the full variance decomposition for all 11 fixed-effect parameters,
+and~\cref{smd:fig-sandwich} provides a three-panel diagnostic
+visualization.
+
+\paragraph{Variance decomposition.}
+The three variance quantities in~\cref{smd:tab-der} deserve careful
+interpretation.
+$[\mathbf{H}_{\mathrm{obs}}^{-1}]_{pp}$ is the model-based variance
+obtained from the observed information matrix---the appropriate
+benchmark under simple random sampling.
+$[\mathbf{V}_{\mathrm{sand}}]_{pp}$ is the sandwich-corrected variance
+\citep{Binder1983} that accounts for the complex survey design, and constitutes the
+primary inferential summary.
+$[\bSigma_{\mathrm{MCMC}}]_{pp}$ is the raw MCMC posterior variance,
+which is substantially inflated (by factors of 600--6{,}500) relative
+to $\mathbf{H}_{\mathrm{obs}}^{-1}$ because the hierarchical prior
+dominates the pseudo-likelihood contribution for fixed effects.
+
+The DER ranges from 1.14 ($\beta_{\mathrm{Hisp}}$) to 4.18
+($\alpha_{\mathrm{Urban}}$), with a mean of 2.11.  This is broadly
+consistent with the Kish $\DEFF = 3.76$: the DER is systematically
+smaller because the state-varying coefficients partially absorb
+within-state clustering (\cref{smc:prop-svc-absorption}).  The
+corresponding confidence interval inflation factors are
+$\sqrt{\DER} \in [1.07, 2.04]$, so the widest Wald intervals are
+approximately twice those of a hypothetical SRS design.
+
+\paragraph{Diagnostic figure.}
+\Cref{smd:fig-sandwich} decomposes the sandwich correction into three
+components.  Panel~(a) shows the hierarchical variance ratio---the ratio of
+naive (MCMC-based) to Wald (sandwich-based) confidence interval
+widths---on a log scale; all parameters exceed a ratio of~10, and
+several exceed~100, confirming that the raw MCMC posterior is
+uninformative about the design-consistent uncertainty.  Panel~(b)
+compares the DER (based on $\mathbf{H}_{\mathrm{obs}}^{-1}$) with the
+``DER\textsubscript{MCMC}'' (based on $\bSigma_{\mathrm{MCMC}}$); the
+latter is near zero for all parameters except $\log\kappa$, further
+illustrating hierarchical inflation.  Panel~(c) reports the diagonal elements
+of the Cholesky scaling matrix $\mathbf{A}$ (\cref{thm:cholesky})
+for the fixed-effects block.
+For the $\alpha$ and $\beta$ coefficients, the diagonal entries are
+all below $0.06$, indicating substantial contraction of the MCMC draws, a direct consequence of the
+hierarchically inflated posterior being much wider than the design-consistent
+target.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}l rrr rr rrr@{}}
+  \toprule
+  Parameter &
+  $H_{\mathrm{obs}}^{-1}$ &
+  $V_{\mathrm{sand}}$ &
+  $\Sigma_{\mathrm{MCMC}}$ &
+  DER &
+  DER$_{\text{mc}}$ &
+  SD($H$) &
+  SD(Sand) &
+  SD(MCMC) \\
+  \midrule
+  $\alpha_{\mathrm{Int}}$ & 0.00097 & 0.00198 & 0.946 & 2.04 & 0.002 & 0.031 & 0.044 & 0.972 \\
+  $\alpha_{\mathrm{Pov}}$ & 0.00114 & 0.00275 & 0.900 & 2.41 & 0.003 & 0.034 & 0.052 & 0.949 \\
+  $\alpha_{\mathrm{Urb}}$ & 0.00028 & 0.00118 & 0.907 & 4.18 & 0.001 & 0.017 & 0.034 & 0.952 \\
+  $\alpha_{\mathrm{Blk}}$ & 0.00127 & 0.00195 & 0.947 & 1.54 & 0.002 & 0.036 & 0.044 & 0.973 \\
+  $\alpha_{\mathrm{Hisp}}$ & 0.00146 & 0.00265 & 0.920 & 1.82 & 0.003 & 0.038 & 0.051 & 0.959 \\
+  $\beta_{\mathrm{Int}}$ & 0.00017 & 0.00023 & 0.860 & 1.36 & 0.000 & 0.013 & 0.015 & 0.927 \\
+  $\beta_{\mathrm{Pov}}$ & 0.00022 & 0.00036 & 0.875 & 1.61 & 0.000 & 0.015 & 0.019 & 0.936 \\
+  $\beta_{\mathrm{Urb}}$ & 0.00013 & 0.00042 & 0.873 & 3.18 & 0.000 & 0.012 & 0.021 & 0.934 \\
+  $\beta_{\mathrm{Blk}}$ & 0.00024 & 0.00033 & 0.845 & 1.38 & 0.000 & 0.016 & 0.018 & 0.919 \\
+  $\beta_{\mathrm{Hisp}}$ & 0.00025 & 0.00028 & 0.892 & 1.14 & 0.000 & 0.016 & 0.017 & 0.945 \\
+  $\log\kappa$ & 0.00033 & 0.00086 & 0.001 & 2.58 & 1.119 & 0.018 & 0.029 & 0.028 \\
+  \bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{Design effect ratio diagnostics for all 11 fixed-effect
+  parameters.  Columns: $H_{\mathrm{obs}}^{-1}$ = model-based variance
+  (observed information inverse), $V_{\mathrm{sand}}$ = sandwich
+  variance, $\Sigma_{\mathrm{MCMC}}$ = raw MCMC posterior variance,
+  DER = $V_{\mathrm{sand}} / H_{\mathrm{obs}}^{-1}$,
+  DER$_{\text{mc}}$ = $V_{\mathrm{sand}} / \Sigma_{\mathrm{MCMC}}$,
+  and the corresponding standard deviations.  The DER range 1.14--4.18
+  (mean 2.11) is consistent with the Kish $\DEFF = 3.76$.}
+\label{smd:tab-der}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{SF6_sandwich_detail.pdf}
+  \caption{Sandwich correction diagnostic details.
+    (a)~Hierarchical variance ratio (log scale): ratio of naive (MCMC-based)
+    to Wald (sandwich-based) confidence interval widths.  Values above
+    the dashed line at~10 indicate strong hierarchical inflation.
+    (b)~DER comparison: design effect ratio computed using
+    $\mathbf{H}_{\mathrm{obs}}^{-1}$ (primary) versus
+    $\bSigma_{\mathrm{MCMC}}$ (diagnostic only).
+    (c)~Cholesky $\mathbf{A}$ diagonal: scaling factors from the
+    affine transformation (\cref{thm:cholesky}).  Values $\ll 1$
+    indicate that the transformation substantially contracts the MCMC
+    draws toward the design-consistent target.}
+  \label{smd:fig-sandwich}
+\end{figure}
